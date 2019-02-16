@@ -1,0 +1,9 @@
+<?php
+
+
+$url=$_SERVER['REQUEST_URI'];
+if(stristr($url,'advert'))
+//echo'advert';
+else
+//echo 'noon';
+?>

@@ -1,0 +1,1065 @@
+<?php
+drupal_add_js(path().'/js/rowlink.js',null,'footer',true,TRUE);
+
+function path()
+{return	drupal_get_path("module", "perfanal");}
+
+function path_rel()
+{return	base_path().drupal_get_path("module", "perfanal");}
+
+function current_page()
+{
+	$url = $_SERVER['REQUEST_URI'];
+	$ex_url = explode('/',$url);
+   return str_replace('?q=','',$ex_url[(($ex_url[1]=='perfanal')?2:1)]).'/';
+   
+}
+
+function yesno($v)
+{
+   return ($v==0)?'No':'Yes';
+}
+
+function hasvalue($a,$v)
+{
+   return (($v>0)?$a.$v:'--');
+}
+function Code_Type($v)
+{
+   $Code[0] = 'Groups';
+   $Code[1] = 'Sub Groups';
+   $Code[2] = 'School Year';
+   $Code[3] = 'Meet Type';
+   $Code[4] = 'Meet Division';
+   $Code[5] = 'WM Groups';
+   $Code[6] = 'WM Sub Groups';
+
+   return $Code[$v];
+}
+
+function Course($w,$v)
+{
+   $Course[0]['L'] = 'LCM';
+   $Course[0]['S'] = 'SCM';
+   $Course[1]['L'] = 'LCM-50m';
+   $Course[1]['S'] = 'SCM-25m';
+   $Course[1]['ALL'] = ' - All Courses';
+   return $Course[$w][strtoupper($v)];
+}
+
+function Gender($v)
+{
+   $Gender['X'] = 'Mixed';
+   $Gender['F'] = 'Female';
+   $Gender['M'] = 'Male';
+   $Gender['FEMALE'] = 'Female';
+   $Gender['MALE'] = 'Male';
+   $Gender['MIXED'] = 'Mixed';
+   return $Gender[strtoupper($v)];
+}
+
+function IR($v)
+{
+   $IR['I'] = 'Indi';
+   $IR['R'] = 'Relay';
+   $IR['L'] = 'Lead';
+   return $IR[strtoupper($v)];
+}
+
+function FP($v)
+{
+   $FP['F'] = 'Final';
+   $FP['P'] = 'Prelim';
+   $FP['I'] = 'Semi';
+   return $FP[strtoupper($v)];
+}
+
+function Stroke($v)
+{
+   $Stroke = array('','Freestyle','Back','Breast','Butterfly','Medley');
+   return $Stroke[$v];
+}
+
+//Formating functions
+
+function NT($n)
+{$NT = array('','','NS','DNF','','DQ');
+   return	$NT[$n];
+}
+
+function Score($n,$s)
+{
+   $s = (NT($n) =='')?get_time($s):''.NT($n).get_time($s).'';
+   return $s;
+};
+
+function get_time ($Score)
+{
+   if($Score==0)
+     return ' &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--';
+   else
+     {$split = substr($Score, strlen($Score)-2, 2);
+	$seconds = substr($Score, 0, strlen($Score)-2);
+	return Date('i:s', $seconds).'.'.$split;
+     }
+}
+function get_sanc($sanc)
+{
+	$sanc = explode(',',$sanc);
+	if(sizeof($sanc)<=2)
+	{
+	if($sanc[1]=='')
+		return $sanc[0];
+	}
+	else
+	{
+		return '*';
+	}
+}
+
+function Age($Ag)
+{
+   return ($Ag=='*')?'*':(($Ag>99)?LO_HI(floor($Ag/100),$Ag%100):LO_HI(0,$Ag));//(($Ag==99)?'Open':$Ag.'yrs'));
+}
+
+function LO_HI($Lo,$Hi)
+{
+   return ($Lo>=$Hi)?$Hi.'yrs':(($Lo>0&$Hi<99)?$Lo.'-'.$Hi:(($Lo==0&$Hi==99)?'Open':(($Hi==99)?$Lo.' & Over':$Hi.' & Under')));
+}
+
+//Not to self change date formatting to corisponed with drupal date formate.
+function get_date($v)
+{
+
+   $start_date = explode("-", $v);
+   return ($v==null)?'-':(($v=='0000-00-00 00:00:00')?'--': Date('d/m/Y', mktime(0, 0, 0, $start_date[1], $start_date[2], $start_date[0])));
+}
+
+
+function t2d($base_time)
+{
+   $pos = strpos($base_time, ':');
+   if ($pos)
+     {
+	$min = substr($base_time, 0, $pos);
+	$min_pos = $pos;
+
+	$base_time = substr($base_time, $pos+1,
+			    strlen($base_time)-$pos);
+     }
+   else
+     {
+	$min = 0;
+     }
+
+   $result = (($min*60)+$base_time);
+
+   return $result;
+}
+
+function d2t($base_split)
+{
+   if (!strpos($base_split, '.'))
+     $base_split = $base_split.'.00';
+   $split = substr($base_split, strlen($base_split)-2, 2);
+   $seconds = substr($base_split, 0, strlen($base_split)-2);
+   return Date('i:s',
+	       $seconds).'.'.$split;
+}
+
+function course_conversion($tm4db,$season) // Short Course And lOng Course only
+{
+	Static $con;
+	if(!isset($con))
+	{
+	$res = db_query('SELECT SQL_CACHE floor(FreeTurn*100/50) as FreeTurn , floor(BackTurn*100/50) as BackTurn, floor(BreastTurn*100/50) as BreastTurn, floor(FlyTurn*100/50) as FlyTurn, floor(IMTurn*100/50) as IMTurn,Straight from  '.$tm4db.'.options_'.$season);
+	if($object = db_fetch_object($res))
+	{
+		if($object->FreeTurn == $object->BackTurn & $object->BreastTurn ==$object->FlyTurn & $object->BackTurn == $object->FlyTurn & $object->BackTurn == $object->IMTurn)
+		$factors = $object->FreeTurn;
+		$factors = 'ELT(r.STROKE,'.$object->FreeTurn.','.$object->BackTurn.','.$object->BreastTurn.','.$object->FlyTurn.','.$object->IMTurn.')';
+		$con =  ' r.Score + IF(r.Course=\'L\',-1,1)*r.Distance*'.$factors.'';
+	}
+	else  $con = ' \'0\' ';
+	}
+	
+	return $con;
+	
+}
+
+
+function setseasons_breadcrumb($bread)
+{
+	
+   $url = current_page();
+   $seasons = seasons();
+   $options='';
+   foreach($seasons as $season)
+     $options.= '<option '.((arg(1)==$season)?'selected':'').' value="'.$season.'">'.$season.'-'.($season+1).'</option>';
+   $Sea = '<select onchange="document.location=\''.url($url).'\'+this.value;" size="1" name="Season">'.$options.'</select>&nbsp;';
+   $seas[] = $Sea;
+   if($bread==null)
+     drupal_set_breadcrumb($seas);
+   else
+     drupal_set_breadcrumb($bread,$error);
+}
+
+function seasons($reset = false)
+{
+	static $my_data;
+	/* if (!isset($my_data) && $reset==false) {
+		 $my_data = variable_get('perfanal_database_seasons', null);
+		//echo'hello';
+	 }*/
+		 
+  if (!isset($my_data) || $reset) {
+   
+		   $tm4db = variable_get('perfanal_database', 'perfanal');
+		   $result = db_query("show tables from ".$tm4db." like 'meet\_____'");
+		
+		   while ($row_data = mysql_fetch_array($result))
+		     {
+			$year = substr($row_data[0], strlen($row_data[0])-4, 4);
+			if ($year != "")
+			  {
+			     $seasons[$year] = $year;
+			  }
+		     }
+		
+		   $seasons = array_reverse($seasons, true);
+		   $my_data= $seasons;
+		 //  variable_set('perfanal_database_seasons', $my_data);
+    
+  }
+  return $my_data;
+  
+}
+
+function get_cur_seasons()
+{
+   $default=null;
+   $rev_seasons = seasons();
+   foreach ($rev_seasons as $key => $value)
+     {
+	if($default==null)
+	  $default = $key;
+	break;
+     }
+   return $default;
+}
+
+function get_seasons($noredirect = false)
+{
+   $def = variable_get('perfanal_season', '');
+   $selected =arg(1);
+   $url = referer_uri();
+   if($selected==null & $url!=null)
+     {//get refer url
+	     $ex_url = explode('/',$url);
+	     $selected = $ex_url[(($ex_url[3]=='perfanal')?5:4)];
+	     
+	if($selected !=null)
+	  drupal_goto(current_page().$selected);
+     }
+   $season =null;
+   $default=null;
+   $rev_seasons = seasons();
+   foreach ($rev_seasons as $key => $value)
+     {
+	if($default==null)
+	  $default = $key;
+	if($key == $selected)
+	  $season = $key;
+     }
+
+   $default = (($def!='')?$def:$default);
+   if($season ==null)
+     if($noredirect==false)
+       {
+	  drupal_goto(current_page().$default);
+       }
+   else
+     $season = $default;
+   return $season;
+}
+
+function ranking_date2()
+{
+	ranking_date(arg(1));
+}
+
+function ranking_date($season)
+{
+   require('main/rankings/admin/ranking_date.php');
+   return $rank;
+}
+
+function js_null($v)
+{
+   return(($v==null)?'0':$v);
+}
+
+//Main varible definitions and functions
+
+drupal_add_css(path().'/perfanal.css','module');
+
+function lsc_filter()
+{
+   $lsc = variable_get('perfanal_lsc', '');
+   return($lsc =='')?'':"And lsc='".$lsc."'";
+}
+
+//Term expansions functions
+
+
+//Original Coding
+
+function pages_limit($page)
+{
+   $size = variable_get('perfanal_pages', '200');
+   return 'limit '.($size*2);
+}
+
+function pages($page,$db,$url)
+{
+   $size = variable_get('perfanal_pages', '200');
+   $page = ($page==null)?1:$page;
+   $output='';
+   if($db>=$size || $page>1)
+     {
+	$output.='<div align=\'center\'><table cellpadding=\'2\'><tr>';
+	$output.='<td nowrap>'.l('','&pg=1').'<a href=\''.url($url).'\'>'.'First Page'.'</a></td>';
+
+	for($i=2;$i<$page;$i++)
+	  $output.='<td nowrap><a href=\''.url($url).'/&pg='.($i).'\'>'.$i.'</a></td>';
+
+	if($page>=2)
+	  $output.='<td nowrap>'.$i.'</td>';
+	if($db>=$size)//there is a nother page
+	  {
+
+	     $output.='<td nowrap><a href=\''.url($url).'/&pg='.($page+1).'\'>'.'Next Page'.'</a></td>';
+	  }
+	/*else
+	  $output.='<td nowrap><a href=\''.url($url).'/&pg='.($i).'\'>'.'Last Page'.'</a></td>';*/
+	
+	$output.="</tr></table></div>";
+     }
+
+   return $output;
+}
+
+
+function db_query_pages($query,$pos,$url)
+{
+   $size = variable_get('perfanal_pages', '200');
+   $page = $_GET['pg'];
+   $page = ($page==null)?1:$page;
+
+   $query=(($pos==null)?'':' Select SQL_CALC_FOUND_ROWS * FROM(Select if(@pre=(@pre:=p.'.$pos.'),\'-\',@pos:=(@pos+1)) AS pos, p.* from ( ').$query;
+   $query.=(($pos==null)?'':' ) as p) as p2  ');
+   $query.=' limit '.(($page-1)*$size).','.($size+1);
+   $row['pos']= ($page-1)*$size+1;
+   db_query(' set @pos = 0,@pre = -1;');
+   $row['result'] = db_query($query);
+   //$rows = db_fetch_object(db_query("SELECT FOUND_ROWS();"))->found_rows;
+   $num = db_num_rows($row['result']);
+
+   if($page>1 & $num >1)
+     db_fetch_object($row['result']);
+   $row['pager'] = pages($page,$num,$url);
+   $row['query'] = $query;
+
+   return $row;
+}
+/*
+function db_query_pages($query,$pos,$url)
+{
+   $size = variable_get('perfanal_pages', '200');
+   $page = $_GET['pg'];
+   $page = ($page==null)?1:$page;
+
+   $query=(($pos==null)?'':' Select if(@pre=(@pre:='.$pos.'),\'-\',(@pos:=(@pos+0))) AS pos,(@pos:=(@pos+1)) as poscount, ').$query;
+   $query.=' limit '.(($page-1)*$size).','.($size+1);
+   $row['pos']= ($page-1)*$size+1;
+   db_query(' set @pos = '.$row['pos'].',@pre = -1;');
+   $row['result'] = db_query($query);
+   
+   $num = db_num_rows($row['result']);
+
+   if($page>1 & $num >1)
+     db_fetch_object($row['result']);
+   $row['pager'] = pages($page,$num,$url);
+   $row['query'] = $query;
+
+   return $row;
+}
+*/
+/* helper functions
+******************************************************************************************/
+
+function extract_seasons()
+{
+   $tm4db = variable_get('perfanal_database', 'perfanal');
+   $result = db_query("show tables from ".$tm4db." like 'athlete_%'");
+
+   while ($row_data = mysql_fetch_array($result))
+     {
+	$year = substr($row_data[0], strlen($row_data[0])-4, 4);
+	if ($year != "")
+	  {
+	     $nyear = ($year+1);
+	     $season = $year.'/'.substr($nyear, 2, 2);
+	     $seasons[$year] = $season;
+	  }
+     }
+
+   $seasons = array_reverse($seasons, true);
+
+   return $seasons;
+}
+
+function perfanal_help($section)
+{
+   switch($section)
+     {
+      case 'admin/modules#description':
+	  {
+	     return t('Performance Analysis based on Team Manager 4');
+	  }
+	break;
+     }
+}
+
+function perfanal_perm()
+{
+   return array('access performance analysis', 'admin performance analysis','aditional performance analysis');
+}
+function perfanal_menu($may_cache)
+{
+	
+   $items = array();
+   if ($may_cache)
+     {
+	     require('main/menu/basic_menu_cache.php');
+     }
+     else
+     {
+	require('main/menu/basic_menu_dynamic.php');     
+     }
+	
+	return $items;
+}
+
+/* module settings
+******************************************************************************************/
+
+function perfanal_admin_settings()
+{
+	require('main/admin/settings_form.php');
+	return system_settings_form($form);
+}
+
+function perfanal_optimize()
+{
+	require('main/optimize/optimize.php');
+	return $output;
+}
+
+function perfanal_updaterankings()
+{
+	require('main/rankings/admin/update.php');
+	return $output;
+}
+
+function perfanal_automated_rankings_Update($season)
+{
+	require('main/rankings/admin/automatic_update.php');
+	return $output;
+}
+
+function perfanal_report_standard()
+{
+  
+   require('main/standards/report_standard.php');
+     return $output;
+}
+
+
+function perfanal_block($op = 'list', $delta = 0, $edit = array()) {
+ switch ($op) {
+    case 'list':
+      $blocks[0]['info'] = t('Automated scroll Record Breakers');
+      return $blocks;
+    case 'configure':
+      $form = array();
+      if ($delta == 0) {
+        $form['perfanal_records_breakers_atonce'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Display number'),
+          '#size' => 2,
+          '#description' => t('This is the amount of records to display at once.'),
+          '#default_value' =>variable_get('perfanal_records_breakers_atonce',  8)
+        );
+      }
+      return $form;
+    case 'save':
+       if ($delta == 0) {
+        // Have Drupal save the string to the database.
+        variable_set('perfanal_records_breakers_atonce', $edit['perfanal_records_breakers_atonce']);
+      }
+      return;
+    case 'view': default:
+      // If $op is "view", then we need to generate the block for display
+      // purposes. The $delta parameter tells us which block is being requested.
+      switch ($delta) {
+        case 0:
+          $block['subject'] =  'Congratulations to the following Record Breakers';
+          $block['content'] = block_prefanal_record_breakers();
+          break;
+      }
+      return $block;
+  }
+}
+
+function block_prefanal_record_breakers()
+{
+	     $season = get_cur_seasons();
+		$breakers_days = variable_get('perfanal_display_breakers', '30');
+	     $output="<div id='record_breakers'><input type='hidden' id='record_url' value='".url('records/'.$season.'/break')."'></div>";
+	     drupal_add_js(path().'/js/ajax.js',null,'footer',true);
+	     drupal_add_js(path().'/js/records.js',null,'footer',true);
+	     return $output;	
+}
+
+function perfanal_record_break()
+{
+	$tm4db = variable_get('perfanal_database', 'perfanal');
+	 $season = get_cur_seasons();
+	  $rec_return = variable_get('perfanal_records_breakers_atonce',  8);
+	     $breakers_days = variable_get('perfanal_display_breakers', '30');
+	    $results = db_query("SELECT SQL_CACHE n.*, r.*,((r.Lo_Age*100)+r.Hi_Age) as Age  from ".$tm4db.".recname_".$season." as n inner join ".$tm4db.".records_".$season." as r on (n.record = r.Record) Where r.I_R='I' and  DATEDIFF(CURDATE(),r.RecDate)<=".$breakers_days." ".(arg(3)?' and n.record='.arg(3):''). " Order by r.recdate desc limit ".((arg(3)*8)+1).','.$rec_return);
+	     $rec='';
+	     while($object = db_fetch_object($results))
+	       {
+		       $rec.= "<div class='record'>";
+		       $rec.= "<div class='left'>".LO_HI($object->Lo_Age,$object->Hi_Age).'<br>'.get_time($object->RecTime).'</div>';
+		       $rec.= "<p class='right'>".$object->Distance.'m '.Stroke($object->Stroke).' '.$object->RecFile.' Record '.$object->Year.', <b>'.l($object->RecText,'records/'.$season.'/age/'.$object->Record.'/'.$object->Age).'</b>&nbsp;'.$object->RecLSC.($object->RecLSC!=null?'-':'').$object->RecTeam.' </p></div>';
+	       }
+	   
+	     print $rec;
+	       exit();	
+}
+
+
+
+function perfanal_records()
+{
+	require('main/records/perfanal_records.php');
+	return $output;
+}
+function perfanal_standards()
+{
+	require('main/standards/perfanal_standards.php');
+	return $output;
+}
+
+function perfanal_fina()
+{
+	require('main/fina/default.php');
+	return $output;
+}
+
+function Meet_Type_Table($url,$tm4db,$season)
+{
+	$confirm = variable_get('perfanal_rankcon', '');
+	
+   $headers[] = array('data' => t('Abbr'), 'width' => '40px');
+   $headers[] = array('data' => t('Description'), 'width' => '250px');
+
+   $max_sanctions = variable_get('perfanal_'.$season.'_max_sanctions', 1);
+   for($i=1;$i<$max_sanctions;$i++)
+   $Where = ' or c.tindex=r.Rtype'.$i;
+   $results = db_query("Select SQL_CACHE distinct c.ABBR,c._DESC  From ".$tm4db.".code_".$season." as c inner join ".$tm4db.".meet_sanctions_".$season." as m ON (m.abbr=c.abbr) inner join ".$tm4db.".result_".$season." as r on (m.meet=r.meet) Where m.c>1 and (c.tindex=r.Rtype ".$Where.") and  TYPE=3 ".(($confirm=='')?'':" and m.include=1")."  order by abbr");
+
+   //$results = db_query("Select SQL_CACHE  distinct c.ABBR,c._DESC From ".$tm4db.".code_".$season." as c inner join ".$tm4db.".meet_sanctions_".$season." as m ON (m.abbr = c.abbr) Where TYPE=3 ".(($confirm=='')?'':" and m.include=1")." order by abbr");
+
+   $rows[] = array(l('ALL',$url.'/ALL'),'');
+   while($object = db_fetch_object($results))
+     if($object->ABBR !=null)
+       $rows[] = array(l($object->ABBR,$url.'/'.$object->ABBR),$object->_DESC);
+
+   return theme_table($headers, $rows,array('id'=>'hyper','class'=>'hyper'),null);
+}
+
+function perfanal_ranking()
+{
+  require('main/rankings/rank_main.php');
+  return $output;
+}
+
+function Indi_Points($tm4db,$season,$Where)  // Points Rankings Function
+{
+   require('main/meets/indi_points.php');
+   return $output;
+}
+
+function perfanal_meets()
+{
+	require('main/meets/main.php');
+	return $output;
+}
+
+function theme_perfanal_events_filters_form($form)
+{
+
+   $output.="<table><tr><td><b>Age Group Filter </b></td><td></td>";
+   $output.= '<td>'.drupal_render($form['age_filter']).'</td><td>'.drupal_render($form['gender']).'</td>';
+   $output.= '<td>&nbsp;&nbsp;&nbsp;'.drupal_render($form['submit']).'</td><td></td>';
+   $output.= '</tr></table>';
+    return $output.drupal_render($form);
+
+  
+}
+
+function perfanal_events_filters_form_submit($form_id, $form_values)
+{
+   $val = $form_values["age_filter"];
+   $val2 = $form_values["gender"];
+   if($val ==null & $val2 ==null)
+   drupal_goto("meets/".arg(1)."/".arg(2)."/".arg(3));
+   else
+     drupal_goto("meets/".arg(1)."/".arg(2)."/".arg(3)."/".$val.(($val!=null)?'':"/").$val2);
+}
+
+function perfanal_events_filters_form()
+{
+    $season = get_seasons();
+   $tm4db = variable_get('perfanal_database', 'perfanal');
+
+   $results = db_query("select SQL_CACHE Lo_Hi FROM ".$tm4db.".".((arg(2)=='events')?"mtevent_":"mtevente_").$season." e  where e.Meet=%d order by Lo_Hi",arg(3));
+
+   
+   while($object = db_fetch_object($results))
+       $ages[$object->Lo_Hi.'/'] = Age($object->Lo_Hi);
+   
+   if(count($ages)>1)
+   {
+	 $age[''] = 'All Ages';
+	 $ages = array_merge($age,$ages);
+   }
+   else
+   $ages=null;
+    $ages[''] = 'All Summary';
+   $form['age_filter'] = array('#type' => 'select', '#options' => $ages, '#default_value' => arg(4).(arg(4)!=null?'/':''));
+   $form['gender'] = array('#type' => 'select', '#options' => array(''=>'All Gender','F'=>'Female','M'=>'Male'), '#default_value' => arg(5).(arg(5)!=null?'':''));
+   $form['submit'] = array('#type' => 'submit', '#value' => t('Filter'));
+ 
+   return $form;
+}
+
+
+function theme_perfanal_meets_filters_form($form)
+{
+
+   $output.="<table class='no_print'><tr><td><b>Meet Type </b></td><td></td>";
+   $output.= '<td>'.drupal_render($form['type']).'</td>';
+   $output.= '<td>&nbsp;&nbsp;&nbsp;'.drupal_render($form['submit']).'</td><td></td>';
+   $output.= '</tr></table>';
+    return $output.drupal_render($form);
+
+  
+}
+
+function perfanal_meets_filters_form_submit($form_id, $form_values)
+{
+   $val = $form_values["type"];
+     drupal_goto("meets/".arg(1)."/".arg(2)."/".$val);
+}
+
+function perfanal_meets_filters_form()
+{
+    $season = get_seasons();
+   $tm4db = variable_get('perfanal_database', 'perfanal');
+$query.="Select SQL_CACHE  c.abbr,c._desc From ".$tm4db.".code_".$season." as c inner join ".$tm4db.".meet_".$season." as  m on (c.abbr=m.type) inner join ".$tm4db.".meet_sanctions_".$season." as sm on (m.Meet=sm.meet) where sm.c=1 ".((arg(2)!='ALL')?" and sm.abbr='".arg(2)."'":"")." and c.TYPE=3 order by c.abbr";
+   
+$results = db_query($query);
+   
+   while($object = db_fetch_object($results))
+       $ages[$object->abbr] = $object->abbr.' - '.$object->_desc;
+   
+   if(count($ages)>1)
+   {
+	 $age[''] = 'All Types';
+	 $ages = array_merge($age,$ages);
+   }
+   else
+   $ages=null;
+    $ages[''] = 'All Types';
+   $form['type'] = array('#type' => 'select', '#options' => $ages, '#default_value' => arg(3));
+   $form['submit'] = array('#type' => 'submit', '#value' => t('Filter'));
+ 
+   return $form;
+}
+
+
+/* swimmers results
+******************************************************************************************/
+
+function perfanal_athlete_filter_form()
+{
+   $edit = $_POST["edit"];
+   $season = get_seasons();
+   $tm4db = variable_get('perfanal_database', 'perfanal');
+
+   $alphaselect = array('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z');
+   $filter_options['an'] = 'All Names';
+   $filter_options['ln'] = 'Last Name';
+   $filter_options['fn'] = 'First Name';
+   for ($i=65; $i<91; $i++)
+     $filter_options[chr($i)] = chr($i);
+
+   $club_list = array('ALL' => 'All Clubs');
+   $result = db_query("select Team,TCode from ".$tm4db.".team_".$season." order by TCode");
+   while ($object = db_fetch_object($result))
+     {
+	$club_list[$object->Team] = $object->TCode;
+     }
+
+     $form['filteropt'] = array('#title'=>'Search (Name or & Surname)', '#type' => 'textfield', '#size' => 45,'#maxlength'=>40, '#default_value' => arg(6),
+			      '#description'=>t('Please note this is an autocomplete search box.<br>Therefore pausing after a typed phrase will yield a match list.<br><b> Example type "Merwe" then stop typing.<br>I would advise one to leave out vd, van, de.</b><br>'),'#autocomplete_path'=>'athlete/'.arg(1).'/auto');
+
+   $form['club'] = array('#title' => 'Clubs','#type' => 'select', '#options' => $club_list, '#default_value' => arg(3));
+   $form['filterby'] = array('#title' => 'Name & Alpha','#type' => 'select', '#options' => $filter_options, '#default_value' => arg(5));
+
+   $form['submit'] = array('#type' => 'submit', '#value' => t('Search'));
+
+   return $form;
+}
+
+function perfanal_athlete_filter_form_submit($form_id, $form_values)
+{
+   $params = (($form_values["club"]) ? $form_values["club"] : '').
+     (($form_values["filterby"]) ? '/'.$form_values["filterby"] : '').
+     (($form_values["filteropt"]) ? '/'.$form_values["filteropt"] : '');
+
+   drupal_goto('athlete/'.arg(1).'/list/'.$params);
+}
+
+function athlete_heading($tm4db,$season,$athlete)
+{
+   require('main/athlete/heading.php');
+
+   return $output;
+}
+
+function perfanal_athlete()
+{
+   setseasons_breadcrumb(null);
+ 
+   $season = get_seasons();
+   $tm4db = variable_get('perfanal_database', 'perfanal');
+   $min_display = variable_get('perfanal_min_display', '20');
+
+   switch(arg(2))
+     {
+	case'auto':
+	  {
+	     $auto = array();
+	     $name_filter = "( LCASE(CONCAT(CONCAT(a.Last,a.First),a.Last)) like '".str_replace(" ", "%%",(' '.strtolower(arg(3)).' '))."' ) ";
+	     $result = db_query("select SQL_CACHE a.Athlete,a.Last,a.First,a.Sex,t.TCode,extract(YEAR FROM from_days(datediff(CURDATE(), a.Birth))) as Age  from ".$tm4db.".athlete_".$season." as a inner join ".$tm4db.".team_".$season." as t on (a.Team1=t.Team) where ".$name_filter." order by a.Last,a.first limit 15");
+	     while($object = db_fetch_object($result))
+	       $auto [$object->Last.' '.$object->First] = "".$object->Last.", ".$object->First." - <b>".$object->Sex."</b> ".$object->Age." ".$object->TCode." ". $object->WMGroup;
+
+	     print drupal_to_js($auto);
+	     exit();
+	  
+	  }
+	break;
+
+      case 'top_times':
+	  {
+
+	    require('main/athlete/times/top.php');
+	     return $output;
+	  }
+      case 'all_times':
+	  {
+
+	    require('main/athlete/times/all.php');
+
+	     return $output;
+	  }
+      case 'meet_times':
+	  {
+	     require('main/athlete/times/meet.php');
+	     return $output;
+	  }
+
+	break;
+
+      case 'entries':
+      {
+	      require('main/athlete/entries/main.php');
+      return $output;
+      }
+	break;
+
+      case 'standards':
+	  {
+	     switch(arg(3))
+	       {
+		case 'qt':
+		    {
+			    require('main/athlete/standards/qt.php');
+		    return $output;
+		       
+
+		    }
+		  break;
+
+		case 'type':
+		    {
+		       require('main/athlete/standards/type.php');
+										     
+			 return $output;
+		    }
+		  break;
+		
+		  case 'events':
+		    {
+			    	require('main/athlete/standards/events.php');
+		       return $output;
+
+		    }
+		  break;
+
+		case 'perf_events':
+		    {
+			    	require('main/athlete/standards/perf_events.php');
+		       return $output;
+
+		    }
+		  break;
+		  
+		  default:
+		    {
+		      require('main/athlete/standards/default.php');
+		       return $output;
+		       
+
+		    }
+		  break;
+
+	       }
+	  }
+	break;
+
+      case 'graphs':
+	  {
+	    require('main/athlete/graphs.php');
+
+	     return $output;
+	  }
+	break;
+
+      case 'list':
+	  {require('main/athlete/list.php');
+
+	     return $output;
+	  }
+	break;
+      default:
+	  {
+	     drupal_set_title('Athlete Times');
+
+	     $output.= drupal_get_form('perfanal_athlete_filter_form');
+	     $output.=l('All Athletes','athlete/'.arg(1).'/list/ALL/an',array('style'=>'font-size:0px'));
+	     return $output;
+
+	  }
+	break;
+     }
+}
+
+
+/*more advanced general query handerling*/
+/*
+function query_where($fil)
+{
+	$query='';
+	if(isset($fil['age']))
+	{
+	$query='s.Low_Age>='%
+	}
+
+return $query;
+}*/
+class STD
+	{
+	public $dsec = Array(null,null);
+	public $std =null;
+	public $l_key;
+	
+	public function __construct($tm4db,$season,$std,$course,$age,$sex)
+	{
+	
+	/*Query out the time standard headings*/
+	 $results = db_query("Select SQL_CACHE * From ".$tm4db.".stdname_".$season." Where StdFile='%s'",$std);
+	 $Object = db_fetch_array($results);
+	
+	if(strlen($course)!=1)
+	$all_courses = true;
+	else
+	$all_courses = false;
+	
+	$query='';
+	
+	for($i=1;$i<=12;$i++)
+	{
+	$t = trim($Object['D'.$i]);
+	if($t=='')
+	break;
+	$dsec[]= Array($t,trim($Object['D'.$i.'Des']));
+	if($course=='S' || $all_courses)
+	$query.='S'.$i.',F'.$i.',';
+	
+	if($course=='L' || $all_courses)
+	$query.='S'.($i+12).',F'.($i+12).',';
+	
+	if($course=='Y' || $all_courses)
+	$query.='S'.($i+24).',F'.($i+24).',';
+	
+	}
+	
+	/*Query out the matching standards*/
+	$query = "Select SQL_CACHE ".$query."Stroke,Distance,Sex,I_R,Lo_Age,Hi_Age From ".$tm4db.'.'.$std."_".$season." Where Lo_Age <= $age and Hi_Age >= $age and Sex='$sex' order by I_R,Sex,Lo_Age,Hi_Age,Stroke,Distance";
+	
+	$results = db_query($query);
+		$jump_keys = array('IR'=>0,'Sex'=>0);
+		$std = array();
+		$change_keys = array(null,null);
+		$query='';
+		$qts_len = sizeof($dsec);
+		while ($object = db_fetch_array($results))
+		{
+			$qt=array();
+			$query_qt_s='';
+			$query_qt_e='';
+			for($i=0;$i<$qts_len;$i++)
+			for($i2=$i;$i2<36;$i2=$i2+12)
+			{
+				$query_t=null;
+				$qt1 = (string)$object['S'.$i2];
+				$qt2 = (string) $object['F'.$i2];
+				if(isset($qt1) || isset($qt2))
+				{
+					$qt[]= $qt1;
+					$qt[]= $qt2;
+					echo':'.$qt2;
+					if($qt1!='')
+					{
+					$query_t='r.score<=S'.$i2.' ';}
+					
+					if($qt2!='0')
+					{$query_t.=($query_t==null?'':' and ').'r.score>F'.$i2.' ';
+					}
+					$wes=" $query_t";
+					
+					$query_qt_s.='if('.$query_t.','.($i+1).',';
+					$query_qt_e.=')';
+				}
+			}
+			$query_age_s.='if(r.age >='.$object['Lo_Age'].' and r.age <='.$object['Hi_Age'].','.$query_qt_s.'0'.$query_qt_e.',';
+			$query_age_e.=')';
+			$std_age[] = array($object['Lo_Age'],$object['Hi_Age'],$qt);
+			if($change_keys != array($object['Stroke'],$object['Distance']))
+			{
+			
+				$query.='if(r.stroke ='.$object['Stroke'].' and r.distance = '.$object['Distance'].','.$query_age_s.'0'.$query_age_e.',0) as qt';
+			
+			$std[] = array($object['Stroke'],$object['Distance'],$std_age);
+			$std_age =array();
+			$query_age_s='';
+			$query_age_e='';
+			
+			}
+			
+		}
+		echo $query;
+		//return array('desc'=>$qt_dsp,'data'=>$std);
+	
+	}
+	
+	function qt(&$data=null)
+	{
+		
+		
+	}
+}
+
+/*
+class courses_conversion{
+
+	private $factors;
+	
+	public function __construct()
+	{
+		$res = db_query('SELECT SQL_CACHE floor(FreeTurn*100/50) as FreeTurn , floor(BackTurn*100/50) as BackTurn, floor(BreastTurn*100/50) as BreastTurn, floor(FlyTurn*100/50) as FlyTurn, floor(IMTurn*100/50) as IMTurn,Straight from  '.$tm4db.'.options_'.$season);
+		if($object = db_fetch_object($res))
+		{
+		if($object->FreeTurn == $object->BackTurn & $object->BreastTurn ==$object->FlyTurn & $object->BackTurn == $object->FlyTurn & $object->BackTurn == $object->IMTurn)
+		$factors = $object->FreeTurn;
+		$factors[] = $object->FreeTurn
+		
+		$factors[] = $object->BackTurn;
+		$factors[] = $object->BreastTurn;
+		$factors[] = $object->FlyTurn;
+		$factors[] = $object->IMTurn;
+		}
+		
+
+		
+		$con =  ' r.Score + IF(r.Course=\'L\',-1,1)*r.Distance*'.$factors.'';
+	
+	}
+	
+	public function con_LS($time)
+	{
+		{{if(true)
+		return $time-1;	}}
+	}
+	
+	
+	
+
+}
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+?>

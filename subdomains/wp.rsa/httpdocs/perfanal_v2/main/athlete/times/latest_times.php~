@@ -1,0 +1,18 @@
+<?php
+require('../../../main_include.php');
+require('../heading.php');
+
+drupal_set_title('Latest Results Times - '.$heading);
+
+ $where = ".meet=(select m.meet from ".$db_name."meet as m inner join ".$db_name."result as r on (r.meet=m.meet) where r.ATHLETE=".inj_int($_GET['ath'])."  order by m.Start Desc limit 1)";
+
+require('meet_common.php');
+
+ $output.= theme_table($header, $rowsL,array('onmouseout'=>'hide_dis();'),null);
+
+	     $output.='</div><br><br><br><br><br><br><br>';
+	   
+
+render_page();
+
+?>

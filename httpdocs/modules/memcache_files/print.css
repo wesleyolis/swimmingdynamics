@@ -1,0 +1,211 @@
+/*
+ Bluebeach Styles,
+ © Steven Wittens.
+
+ The icons for Modules, Themes and Translations are based on the Mozilla Firefox
+ Winstripe theme and are triple licensed under the MPL/GPL/LGPL. All other
+ images are © Steven Wittens.
+
+ This theme is NOT for public use. No copying of CSS, XHTML or images is allowed without permission.
+*/
+body, .form-text, .form-password, textarea, th, td {
+  color: #000;
+}
+body {
+  font-size: 110%;
+}
+html>body {
+  font-size: 18px;
+}
+#contentwrapper {
+  background: transparent;
+  margin: 0px 0px 0px 30px;
+}
+#header {
+  background: none;
+  height: auto;
+}
+img#logo {
+  border-width: 0px;
+  position: static;
+  float: left;
+}
+#tabfloat {
+  display: none;
+}
+#search {
+  display: none;
+}
+#search div {
+  display: none;
+}
+#search .form-text {
+  display: none;
+}
+#search .form-submit {
+  display: none;
+}
+#mission {
+  margin: 0px 0px 0px 5px;
+  width: 98%;
+}
+#mission a {
+  color: #0062A0;
+  font-weight: normal;
+  text-decoration: underline;
+  position: relative; /* prevent IE peekaboo bug */
+}
+#brochure, #brochure-con, #brochure-garden {
+  display: none;
+}
+#mission .box {
+  width: 98%;
+  background: none;
+  border: none;
+  color: #000;
+  font-size: 1.1em;
+  padding: 0px;
+  margin: 0px;
+  margin-left: 240px;
+}
+#mission .box .w1 {
+  background-image: none;
+}
+#mission .box .w2 {
+  background-image: none;
+}
+#mission .box .w3 {
+  background-image: none;
+}
+#mission .box .w4 {
+  position: static;
+  background-image: none;
+  min-height: 0px;
+  _height: auto;
+}
+#mission .box p {
+  margin: 0px;
+  padding: 0px;
+}
+#download {
+  display: none;
+}
+#mission br {
+  clear: both;
+}
+ul#missionlinks {
+  display: none;
+}
+#threecol {
+  width: 100%;
+  float: none;
+}
+.sidebar {
+  display: none;
+}
+.content-none {
+  width: 100%;
+}
+.content-left, .content-both, .content-right {
+  float: none;
+  margin: 0px 20px 0px 0px;
+}
+.breadcrumb, .links {
+  color: #0062A0;
+}
+.breadcrumb {
+  clear: left;
+}
+ul.primary, ul.secondary {
+  display: none;
+}
+#content #squeeze {
+  padding: 0px
+  margin: 0px;
+}
+#content a {
+  color: #0062A0;
+  font-weight: normal;
+  text-decoration: underline;
+}
+#content a:visited {
+  color: #0062A0;
+}
+#content a.active, #content li.active a:visited, #content li.active a {
+  color: #0062A0;
+}
+#content .node h2.node-title, #content h2.title, #content h1.title {
+  color: #000;
+}
+#content h1.title, #content h1.withtabs {
+  border-bottom: 1px solid #7F98A7;
+}
+#content .node h2 {
+  color: #000;
+}
+#content .sticky {
+  background: none;
+  border: 1px solid #D0D0D0;
+  position: relative; /* peekaboo ie bug */
+}
+#content .sticky .w1, #content .sticky .w2, #content .sticky .w3, #content .sticky .w4 {
+  background: none;
+}
+#content h2 a {
+  color: #0062A0;
+  font-size: 1em;
+  font-weight: normal;
+  text-decoration: none;
+}
+#content h2 a:visited {
+  color: #0062A0;
+}
+#content .node {
+  padding: 5px;
+}
+#content .node .info-list, #content .node .info-page {
+  color: #000;
+  font-size: 0.85em;
+}
+#content .comment h3 {
+  color: #000;
+}
+#content .comment h3 a {
+  color: #0062A0;
+  font-weight: normal;
+}
+#block-block-1 a {
+  color: #0062A0;
+}
+div.description a:visited {
+  color: #0062A0 !important;
+  text-decoration: underline;
+}
+tr.dark {
+  background-color: #EDF1F3;
+}
+tr.dark td.active {
+  background-color: #D9EAF0;
+}
+#pager strong, #pager a {
+  background: none;
+}
+#pager a:hover {
+  background: none;
+}
+#pager strong {
+  background: #D9EAF0;
+  color: #000;
+}
+#content td.container {
+  background-color: #a6cde6;
+  color: #000
+}
+#content td.container a {
+  color: #0062A0;
+}
+#footer2 {
+  width: 100%;
+  clear: both;
+  background: none;
+}

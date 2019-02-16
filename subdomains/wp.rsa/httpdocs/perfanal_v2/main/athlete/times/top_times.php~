@@ -1,0 +1,74 @@
+<?php
+$option = 'top_times.php';
+require('../../../main_include.php');
+require('../heading.php');
+
+	
+	drupal_set_title('Top Time Results - '.$heading);
+
+	$where = 'and r.RBest=1 ';	 
+
+	     $query="select r.fina, ".course_conversion(0)." as converted , r.COURSE, r.NT, r.SCORE, r.DISTANCE, r.STROKE, m.MName, m.Start, r.F_P, r.MtEvent, m.Meet, r.Result, (Select Group_CONCAT( CONCAT(CONCAT(SplitIndex,','),Split)) as Splits From ".$db_name."splits Where SplitID=r.Result) as Splits from ".$db_name."result as r left join ".$db_name."meet as m on (r.MEET=m.Meet ) where r.ATHLETE=".inj_int($_GET['ath'])." ".$where."order by r.COURSE, r.STROKE,r.Distance, r.SCORE";
+	
+	     $result = db_query($query);
+ 	
+	    $header[] = array('data' => t('Time'));
+	     $header[] = array('data' => t('Distance'));
+	     $header[] = array('data' => t('Stroke'));
+	     $header[] = array('data' => t('Conv SC'));
+	     $header[] = array('align'=>'right','data'=>'Fina - '.$running_config['fina_points_rank_year'],'colspan'=>2);
+	     $header[] = array('data' => t('Round'));
+	     $header[] = array('data' => t('Date'));
+	     $header[] = array('data' => t('Meet - Results'));
+	     $i=0;
+	    
+	     if(!mysql_error())
+	     while ($object = mysql_fetch_object($result))
+	       {
+		 
+		  $time = Score($object->NT,$object->SCORE);
+		 
+		 $link = 'evx='.$object->MtEvent;
+		
+		
+		  $data = array('valign'=>'top','onmouseover'=>"dis_splits(".$i.",'".$object->Splits."')" ,'data'=> array($time,$object->DISTANCE.($object->COURSE=='Y'?'':'m')."<div class='cellrel'><div class='cellinfodis' id='s".$i."'></div></div>", Stroke($object->STROKE),get_time($object->converted ),$object->fina,($object->Splits==null)?null:l2(t('splits'), 'ath='.$_GET['ath'].'&sp='.$object->Result,'splits.php'), FP($object->F_P),get_date($object->Start), l2(t($object->MName), $link,'../../meets/indi_results.php')));
+
+		  if (strtolower($object->COURSE) == "l")
+		    $rowsL[] = $data;
+		    else
+		    if (strtolower($object->COURSE) == "s")
+		    	$rowsS[] = $data;
+		    else
+		    if (strtolower($object->COURSE) == "y")
+		    	$rowsY[] = $data;
+		    
+			$i++;
+	       }
+
+	     $output.= "<span class='no_print'>To view splits move cursor over result. N.B If splits off page use mouse wheel to srcoll down.<br><br></span>";
+	   
+	     if($rowsL!=null)
+	    {
+	     $output.= "<b>Long Course - 50m</b>";
+	     $output.= theme_table($header, $rowsL,array('onmouseout'=>'hide_dis();'),null);
+	    }
+	    
+	    if($rowsS!=null)
+	    {
+	     $output.= "<br><b>Short Course - 25m</b>";
+	     $header[3] = array('data' => t('Conv LC'));
+	     $output.= theme_table($header, $rowsS, array('onmouseout'=>'hide_dis();'),null);
+	    }
+	    
+	     if($rowsY!=null)
+	    {
+	     $output.= "<br><b>Yards - 25yrd</b>";
+	     $header[3] = array('data' => t('Conv SC'));
+	     $output.= theme_table($header, $rowsY, array('onmouseout'=>'hide_dis();'),null);
+	    }
+	     
+	     $output.='<br><br><br><br><br><br><br>';
+	     
+	     render_page();
+
+?>

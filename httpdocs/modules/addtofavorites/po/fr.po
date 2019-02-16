@@ -1,0 +1,87 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2006-10-16 19:53+0100\n"
+"Last-Translator: q <sq>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Country: FRANCE\n"
+
+#: modules/addtofavorites/addtofavorites.module:16
+msgid "Help visitors to add the site to their browser's bookmarks."
+msgstr ""
+
+#: modules/addtofavorites/addtofavorites.module:31
+#: ;116
+msgid "Add the website to your browser's favorites"
+msgstr ""
+
+#: modules/addtofavorites/addtofavorites.module:34
+msgid "This will be the title for the addfavorites block."
+msgstr ""
+
+#: modules/addtofavorites/addtofavorites.module:38
+msgid "Enable site bookmarking"
+msgstr ""
+
+#: modules/addtofavorites/addtofavorites.module:43
+msgid "Enable page bookmarking"
+msgstr ""
+
+#: modules/addtofavorites/addtofavorites.module:48
+msgid "Enable links"
+msgstr ""
+
+#: modules/addtofavorites/addtofavorites.module:53
+msgid "Label for site bookmark link and icon alternate text"
+msgstr ""
+
+#: modules/addtofavorites/addtofavorites.module:56
+#: ;125
+msgid "Bookmark this site"
+msgstr "Rajouter ce site aux favoris"
+
+#: modules/addtofavorites/addtofavorites.module:60
+msgid "Label for current page bookmark link and icon alternate text"
+msgstr ""
+
+#: modules/addtofavorites/addtofavorites.module:63
+#: ;127
+msgid "Bookmark this page"
+msgstr "Rajouter cette page aux favoris"
+
+#: modules/addtofavorites/addtofavorites.module:72
+msgid "Path to your icon for bookmarking site"
+msgstr "Chemin vers l'icone pour rajouter le site aux favoris "
+
+#: modules/addtofavorites/addtofavorites.module:74
+msgid "The path to the icon file for bookmarking site."
+msgstr "Chemin vers l'icone pour rajouter le site aux favoris "
+
+#: modules/addtofavorites/addtofavorites.module:78
+msgid "Path to your icon for bookmarking page"
+msgstr "Chemin vers l'icone pour rajouter la page aux favoris "
+
+#: modules/addtofavorites/addtofavorites.module:80
+msgid "The path to the icon file for bookmarking page."
+msgstr "Chemin vers l'icone pour rajouter la page aux favoris "
+
+#: modules/addtofavorites/addtofavorites.module:89
+msgid "Path to icon for 'bookmarking current site' is incorrect !"
+msgstr ""
+
+#: modules/addtofavorites/addtofavorites.module:92
+msgid "Path to icon for 'bookmarking current page' is incorrect !"
+msgstr ""
+
+#: modules/addtofavorites/addtofavorites.module:102
+msgid "Addtofavorites : Help users to add this website to their browser's (IE, Mozilla, ...) bookmarks"
+msgstr ""
+
+#: modules/addtofavorites/addtofavorites.module:0
+msgid "addtofavorites"
+msgstr ""
+

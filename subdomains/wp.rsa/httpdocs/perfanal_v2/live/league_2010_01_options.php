@@ -1,0 +1,1 @@
+<?php $running_config = unserialize('a:3:{s:16:"ranking_updating";b:0;s:12:"ranking_type";s:7:"current";s:19:"ranking_last_update";s:10:"2010-06-26";}'); ?>

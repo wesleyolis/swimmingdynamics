@@ -1,0 +1,59 @@
+<?php
+// $Id: collapsiblock.module,v 1.10 2007/02/03 07:28:14 nedjo Exp $
+
+/**
+ * @file
+ * Make blocks collapsible.
+ */
+
+/**
+ * Implementation of hook_menu().
+ */
+function collapsiblock_menu($may_cache) {
+  $items = array();
+  if (!$may_cache) {
+    collapsiblock_load();
+  }
+  return $items;
+}
+
+/**
+ * Load needed files.
+ */
+function collapsiblock_load() {
+  static $loaded = FALSE;
+  if (!$loaded) {
+    $path = drupal_get_path('module', 'collapsiblock');
+    module_invoke('jstools', 'add_js', $path . '/collapsiblock.js');
+    drupal_add_js(drupal_get_path('module', 'jstools') .'/jquery.cookie.js');
+    drupal_add_js(array('collapsiblock' => variable_get('collapsiblock_settings', array())), 'setting');
+    drupal_add_css($path .'/collapsiblock.css');
+    $loaded = TRUE;
+  }
+}
+
+function collapsiblock_form_alter($form_id, &$form) {
+  if ($form_id == 'block_admin_configure') {
+    $settings = variable_get('collapsiblock_settings', array());
+    $form['#submit']['collapsiblock_submit'] = array();
+    $form['collapsiblock'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Collapsible'),
+      '#collapsible' => true,
+      '#weight' => -5
+    );
+    $form['collapsiblock']['collapse_type'] = array(
+      '#type' => 'radios',
+      '#title' => t('Block collapse behavior'),
+      '#options' => array(1 => t('None.'), 2 => t('Collapsible, expanded by default.'), 3 => t('Collapsible, collapsed by default.')),
+      '#default_value' => $settings['block-' . $form['module']['#value'] . '-' . $form['delta']['#value']] ? $settings['block-' . $form['module']['#value'] . '-' . $form['delta']['#value']] : 2
+    );
+  }
+}
+
+function collapsiblock_submit($form_id, $edit) {
+  $settings = variable_get('collapsiblock_settings', array());
+  $settings['block-' . $edit['module'] . '-' . $edit['delta']] = $edit['collapse_type'];
+  variable_set('collapsiblock_settings', $settings);
+}
+

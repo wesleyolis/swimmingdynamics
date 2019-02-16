@@ -1,0 +1,9 @@
+function block_prefanal_record_breakers()
+{
+	     $season = get_cur_seasons();
+		$breakers_days = variable_get('perfanal_display_breakers', '30');
+	     $output="<div id='record_breakers'><input type='hidden' id='record_url' value='".url('records/'.$season.'/break')."'></div>";
+	     drupal_add_js(path().'/js/ajax.js',null,'footer',true);
+	     drupal_add_js(path().'/js/records.js',null,'footer',true);
+	     return $output;	
+}

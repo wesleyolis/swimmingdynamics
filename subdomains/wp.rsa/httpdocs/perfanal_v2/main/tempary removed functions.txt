@@ -1,0 +1,24 @@
+/*
+function db_query_pages($query,$pos,$url)
+{
+   $size = variable_get('perfanal_pages', '200');
+   $page = $_GET['pg'];
+   $page = ($page==null)?1:$page;
+  
+  $row['pos']= ($page-1)*$size;
+  $query.=' limit '.($row['pos']+1).','.($size+1);
+
+  // db_query(' set @pos = 0,@pre = -1;');
+   $row['result'] = db_query($query);
+   //$rows = db_fetch_object(db_query("SELECT FOUND_ROWS();"))->found_rows;
+   $num = db_num_rows($row['result']);
+
+   if($page>1 & $num >1)
+     db_fetch_object($row['result']);
+   $row['pager'] = pages($page,$num,$url);
+   $row['query'] = $query;
+   
+
+   return $row;
+}
+*/

@@ -1,0 +1,104 @@
+<?php
+global $perfanal_url;
+$perfanal_url='perfanal_v2/';
+
+function perfanal_v2_perm()
+{
+   return array('layout performance analysis (everyone)','access performance analysis', 'admin performance analysis','aditional performance analysis');
+}
+
+function perfanal_v2_menu($may_cache)
+{
+	global $perfanal_url;
+	$domain = $_SERVER["SERVER_NAME"];
+
+   $items = array();
+   if ($may_cache)
+     {
+	    require($perfanal_url.'main_config.php');
+
+	    foreach($sites as $domain_reg=>$data)
+		 {
+			
+			 if(preg_match('/'.$domain_reg.'/',$domain))
+			 {
+				 foreach($data as $url_reg=>$conf)
+				 {
+					
+					 $seas=null;
+					foreach($conf['seas'] as $seas_reg=>$s)
+					{
+						if($seas_reg>$seas)
+						 $seas=$seas_reg;
+					}
+
+					 $items[] = array('path' => 'http://'.$conf['url'].'/'.$perfanal_url.'db_cover_page/index.php?db='.$url_reg.'&ss='.$seas,
+					 'title' => t($conf['title']),
+					 'access' => user_access('access performance analysis'),
+					 'type' =>MENU_ITEM_GROUPING,
+					 'weight' => 1);
+					 
+					 $title=(($conf['settings']['cntry']!='')?$conf['settings']['cntry']:'').(($conf['settings']['cntry']!='' & $conf['settings']['lsc']!='')?'-':'').(($conf['settings']['lsc']!='')?$conf['settings']['lsc']:''); 
+					 
+					 $items[] = array('path' => 'http://'.$conf['url'].'/'.$perfanal_url.'main/seasons/index.php?db='.$url_reg.'&ss='.$seas,
+					      'title' => t('Select Seasons '.$value),
+					      'access' => user_access('access performance analysis'),
+					      'weight' => -5);
+					 
+					 $items[] = array('path' => 'http://'.$conf['url'].'/'.$perfanal_url.'main/meets/index.php?db='.$url_reg.'&ss='.$seas,
+					      'title' => t('Meets '.$value),
+					      'callback' => '',
+					      'access' => user_access('access performance analysis'),
+					      'weight' => -4);
+				
+							     
+							   
+					     $items[] = array('path' => 'http://'.$conf['url'].'/'.$perfanal_url.'main/rankings/index.php?db='.$url_reg.'&ss='.$seas,
+							      'title' => t($title.' Rankings '.$value),
+							      'access' => user_access('access performance analysis'),
+							      'weight' => -3);
+				
+					     $items[] = array('path' => 'http://'.$conf['url'].'/'.$perfanal_url.'main/athlete/index.php?db='.$url_reg.'&ss='.$seas,
+							      'title' => t('Athlete Times '.$value),
+							      'access' => user_access('access performance analysis'),
+							      'weight' => -2);
+				
+					     $items[] = array('path' => 'http://'.$conf['url'].'/'.$perfanal_url.'main/standards/index.php?db='.$url_reg.'&ss='.$seas,
+							      'title' => t('Standards '.$value),
+							      'access' => user_access('access performance analysis'),
+							      'weight' => -1);
+				
+					     $items[] = array('path' => 'http://'.$conf['url'].'/'.$perfanal_url.'main/records/index.php?db='.$url_reg.'&ss='.$seas,
+							      'title' => t('Records '.$value),
+							      'access' => user_access('access performance analysis'),
+							      'weight' => 0);
+						
+				
+						$items[] = array('path' => 'http://'.$conf['url'].'/'.$perfanal_url.'main/fina/index.php?db='.$url_reg.'&ss='.$seas,
+								 'title' => t('Fina Points'),
+								 'access' => user_access('access performance analysis'),
+								 'weight' => 6);
+								 
+						 $items[] = array('path' => 'perfanal/'.$url_reg.'/layout',
+						 'title' => t('Perfanal Layout (Disable)'),
+						 'callback' => 'perfanal_layout',
+						 'access' => user_access('layout performance analysis (everyone)'),
+						 'weight' => 10);
+						 
+						
+					 }
+				 }
+			 }
+	
+     }
+	return $items;
+}
+
+function perfanal_layout()
+{
+	drupal_set_title('');
+	drupal_set_breadcrumb(array('breadcrumb0123456789'));
+	return	'page_contents0123456789';
+}
+
+?>

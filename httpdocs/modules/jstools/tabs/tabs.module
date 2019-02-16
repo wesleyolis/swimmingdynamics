@@ -1,0 +1,92 @@
+<?php
+
+/**
+ * @file
+ * API for creating tabbed pages.
+ */
+
+function tabs_process_tabset($element) {
+  static $names = array();
+  tabs_load();
+  // Ensure name is unique.
+  $i = 0;
+  // Assign a name, reading from the first parent (the key of this tabset element).
+  $name = $element['#tabset_name'] = $element['#parents'][0];
+  // In case we have duplicate names...
+  while (in_array($element['#tabset_name'], $names)) {
+    $element['#tabset_name'] = $name . $i;
+    $i++;
+  }
+  $names[] = $element['#tabset_name'];
+  $index = 1;
+  foreach (element_children($element) as $key) {
+    if ($element[$key]['#type'] && $element[$key]['#type'] == 'tabpage') {
+      $element[$key]['#tabset_name'] = $element['#tabset_name'];
+      $element[$key]['#index'] = $index++;
+    }
+  }
+  return $element;
+}
+
+function theme_tabset($element) {
+  $output .= '<div class="drupal-tabs">';
+  $output .= '<ul class="anchors">';
+  $index = 0;
+  foreach (element_children($element) as $key) {
+    if ($element[$key]['#type'] && $element[$key]['#type'] == 'tabpage') {
+      $index++;
+      $output .= '<li><a href="#'. $element['#tabset_name'] .'-'. $index .'" tabindex="'. $index .'">'. $element[$key]['#title'] .'</a></li>';
+    }
+  }
+  $output .= '</ul>';
+  $output .= $element['#children'];
+  $output .= '</div>';
+  return $output;
+}
+
+function theme_tabpage($element) {
+  $output .='<div id="'. $element['#tabset_name'] .'-'. $element['#index'] .'" class="fragment">';
+  $output .= '<h2 class="drupal-tabs-title">'. $element['#title'] .'</h2>';
+  $output .= $element['#content'] . $element['#children'];
+  $output .='</div>';
+  return $output;
+}
+
+/**
+ * Add required js and css files.
+ */
+function tabs_load() {
+  static $loaded = FALSE;
+  if (!$loaded) {
+    $path = drupal_get_path('module', 'tabs');
+    drupal_add_js($path . '/jquery.tabs.pack.js');
+    drupal_add_js(drupal_get_path('module', 'jstools') . '/jquery.history.pack.js');
+    drupal_add_js($path . '/tabs.js');
+    drupal_add_css($path . '/drupal-tabs.css');
+    drupal_add_css($path . '/tabs.css');
+    drupal_set_html_head('
+      <!-- Additional IE/Win specific style sheet (Conditional Comments) -->
+      <!--[if lte IE 7]>
+      <link rel="stylesheet" href="'. $path . '/tabs-ie.css" type="text/css" media="projection, screen" />
+      <![endif]-->
+    ');
+    $loaded = TRUE;
+  }
+}
+
+/**
+ * Render a tabset 'manually' (when not rendering as part of a regular form render).
+ */
+function tabs_render($form) {
+  return drupal_render(form_builder('tabset', $form));
+}
+
+/**
+ * Implementation of hook_elements().
+ */
+function tabs_elements() {
+  $type = array();
+  $type['tabset'] = array('#process' => array('tabs_process_tabset' => array()));
+  $type['tabpage'] = array('#content' => '');
+  return $type;
+}

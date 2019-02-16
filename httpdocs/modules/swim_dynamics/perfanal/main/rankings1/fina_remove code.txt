@@ -1,0 +1,19 @@
+/*
+	No pre-ranking needed
+	$query = "SELECT *,min(res.fina) as f3,max(res.fina) as f2,Round(avg(res.fina)) as f0, Count(*) as events, Sum(res.fina) as f1 from (select r.stroke,r.distance,Max(r.fina) as fina,a.Athlete, a.Last, a.First, a.Sex, a.age, r.SCORE, t.TCode, t.LSC, r.Age as sage FROM (((".$tm4db.".result_".$season." as r left join ".$tm4db.".athlete_".$season." as a on (r.ATHLETE=a.Athlete)) left JOIN ".$tm4db.".team_".$season." as t on (r.Team=t.Team) ) left join ".$tm4db.".meet_".$season." as m on (r.Meet=m.Meet)) WHERE r.I_R='I' and a.Athlete > 0 and r.TRANK>0 and ";
+	$query.= $Where." Group by r.Athlete,r.Course,r.stroke,r.distance ) as  res group by res.Athlete order by f".$sort." desc";
+	*/
+	/*
+	$query = "SELECT *,min(res.fina) as fina_min,max(res.fina) as fina_max,Round(avg(res.fina)) as fina_avg, Count(*) as events, Sum(res.fina) as fina2 from (select r.stroke,r.distance,Max(r.fina) as fina,a.Athlete, a.Last, a.First, a.Sex, a.age, r.SCORE, t.TCode, t.LSC, r.Age as sage FROM (((".$tm4db.".result_".$season." as r left join ".$tm4db.".athlete_".$season." as a on (r.ATHLETE=a.Athlete)) left JOIN ".$tm4db.".team_".$season." as t on (r.Team=t.Team) ) left join ".$tm4db.".meet_".$season." as m on (r.Meet=m.Meet)) WHERE r.I_R='I' and a.Athlete > 0 and r.TRANK>0 and ";
+	$query.= $Where." Group by r.Athlete,r.Course,r.stroke,r.distance ) as  res group by res.Athlete order by fina_avg desc";
+	*/
+
+	/*
+	$query = "Select *, Max(res.fina) as mins FROM";
+	$query.= "(Select Round(1000*Pow(f.Score/r.Score,3)) as fina, m.Meet,m.MName,a.Athlete, a.Last, a.First, a.Sex, a.age, r.SCORE, t.TCode, t.LSC, r.Age as sage";
+	$query.= " FROM (((".$tm4db.".result_".$season." as r left join ".$tm4db.".athlete_".$season." as a on (r.ATHLETE=a.Athlete)) left JOIN ".$tm4db.".team_".$season." as t on (r.Team=t.Team) ) left join ".$tm4db.".meet_".$season." as m on (r.Meet=m.Meet))  inner join {fina_points} as f on (r.Course=f.Course and r.I_R=f.I_R and r.Stroke=f.Stroke and r.Distance=f.Distance and a.sex=f.Sex) ";
+	$query.= " WHERE r.I_R='I' and a.Athlete > 0 and r.NT=0 and ".$Where; // a.age >=15 and a.age <=16 and r.COURSE='L' and a.Sex='F'and r.Stroke=1 and r.Distance=50 and r.NT=0 and (DATEDIFF(m.Start,'2006-12-24') <=0)";
+	$query.= " order by  r.Athlete, r.Score)";
+	$query.= " as res GROUP by res.Athlete order by res.fina desc";*/
+
+   //$output.=$query;

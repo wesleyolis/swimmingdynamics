@@ -1,0 +1,10 @@
+; $Id $
+name = JS Calendar
+description = Enables popup calendars for selecting dates using the jscalendar library.
+package = Javascript tools
+version = "$Name: DRUPAL-5--0-6 $"
+
+; Information added by drupal.org packaging script on 2007-03-19
+version = "5.x-0.6"
+project = "jstools"
+

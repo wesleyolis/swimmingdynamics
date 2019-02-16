@@ -1,0 +1,112 @@
+<?php
+$url = 'ranking/'.arg(1).'/'.arg(2).'/'.arg(3).'/'.arg(4).'/'.arg(5).'/'.arg(6).'/'.arg(7).'/'.arg(8).'/'.arg(9).'/'.arg(10);
+ if($rank_fina=='y')
+ {
+
+	 
+	 $rank_day = variable_get('perfanal_ranking_dd', '01');
+	 $rank_month = variable_get('perfanal_ranking_mm', '05');
+	 
+	 if(arg(11)=='next')
+	 {
+		 $Where1=' and r.age=(a.FINA_age+1) ';
+		 $Where2=' and r.age=(a.FINA_age+1) ';
+		 $output.=l('Current Season - '.(arg(1)),$url).' | Pre next Seasons - '.(arg(1)+1);
+		 drupal_set_title($pref_head.' '.$type[arg(3)].' '.$fina_year.' Rankings'." for ".(arg(1)).'-'.$rank_month.'-'.$rank_day.' to '.(arg(1)+2).'-'.$rank_month.'-'.$rank_day.' ('.$last_ranking.")<br/><small>".$heading.' '.Gender(arg(7)).' '.Age(arg(8)).' '.((arg(9)=='All' & arg(10)=='All')?'Overall':(((arg(10)=='All')?'':arg(10).'m ').((arg(9)=='All')?'':Stroke(arg(9))))).' '.Course(0,arg(6)).', Ages on \''.(arg(1)+1).'-'.$rank_month.'-'.$rank_day.'\'.</small>');
+		 
+	 }
+	 else
+	 {
+		 $Where1=' and r.age=a.FINA_age ';
+		 $Where2=' and r.age=(a.FINA_age+1) ';
+		 $output.='Current Season - '.arg(1).' | '.l('Pre next Seasons - '.(arg(1)+1),$url.'/next');
+		 drupal_set_title($pref_head.' '.$type[arg(3)].' '.$fina_year.' Rankings'." for ".(arg(1)-1).'-'.$rank_month.'-'.$rank_day.' to '.(arg(1)+1).'-'.$rank_month.'-'.$rank_day.' ('.$last_ranking.")<br/><small>".$heading.' '.Gender(arg(7)).' '.Age(arg(8)).' '.((arg(9)=='All' & arg(10)=='All')?'Overall':(((arg(10)=='All')?'':arg(10).'m ').((arg(9)=='All')?'':Stroke(arg(9))))).' '.Course(0,arg(6)).', Ages on \''.arg(1).'-'.$rank_month.'-'.$rank_day.'\'.</small>');
+		 
+	 }
+	 if(!$rank_pre_seasons)
+	 {
+		 drupal_set_message('The previous seasons times are current not avalible or no aplicable meets in the previous seaons has been found.<br> Therefore rankings only include current seaaons times and can\'t be hold as correct.');
+	 }
+	 //check for previous seasons
+ }
+ else
+ {
+  drupal_set_title($pref_head.' '.$type[arg(3)].' '.$fina_year.' Rankings'." as of ".$last_ranking."<br/><small>".$heading.' '.Gender(arg(7)).' '.Age(arg(8)).' '.((arg(9)=='All' & arg(10)=='All')?'Overall':(((arg(10)=='All')?'':arg(10).'m ').((arg(9)=='All')?'':Stroke(arg(9))))).' '.Course(0,arg(6)).'</small>');//, Ages as of day on meet.
+ }
+		  if(arg(9)!='All')
+		    $Where.= " and r.Stroke=".arg(9)." ";
+		  if(arg(10)!='All')
+		    $Where.= " and r.Distance=".arg(10)." ";
+		    
+ $sort = (arg(12)==null)?0:arg(12);
+   $url.='/'.arg(11);
+
+   $header[] = array('data' => ($sort==0)?t('Avg'):l(t('Avg'),$url), 'width' => '40px');
+   $header[] = array('data' => ($sort==1)?t('Total'):l(t('Total'),$url.'/1'), 'width' => '40px');
+   $header[] = array('data' => ($sort==2)?t('Max'):l(t('Max'),$url.'/2'), 'width' => '40px');
+   $header[] = array('data' => ($sort==3)?t('Min'):l(t('Min'),$url.'/3'), 'width' => '40px');
+   $header[] = array('data' => ($sort==4)?t('STD'):l(t('STD'),$url.'/4'), 'width' => '40px');
+   
+
+   $headers[] = array('data' => t('#'), 'width' => '40px');
+   $headers[] = $header[$sort];
+   $headers[] = array('data' => t('Athlete Name'), 'width' => '250px');
+   $headers[] = array('data' => t('M/F'), 'width' => '30px');
+   $headers[] = array('data' => t('Age'), 'width' => '30px');
+   $headers[] = array('data' => t('Team'), 'width' => '80px');
+   $headers[] = array('data' => t('Events'), 'width' => '40px');
+   for($i=0;$i<5;$i++)
+     if($i!=$sort)
+       {
+	  $headers[] = $header[$i];
+	  $fields[] = 'f'.$i;
+       }
+
+   $query = "SELECT SQL_CACHE Round(std(r.fina)) as f4,min(r.fina) as f3,max(r.fina) as f2,Round(avg(r.fina)) as f0, Count(*) as events, Sum(r.fina) as f1,";
+   $query.= "a.Athlete, a.Last, a.First, a.Sex, ".($rank_pre_seasons?'r.age as age':'a.age').", t.TCode, t.LSC FROM (((".$tm4db."result_".$season." as r left join ".$tm4db."athlete_".$season." as a on (r.ATHLETE=a.Athlete)) ".$filter_team." ) left join ".$tm4db."meet_".$season." as m on (r.Meet=m.Meet)) WHERE r.fina!=0 and ".$Where.' '.$Where1.' '.$Where_rank[0];
+   if(!$rank_pre_seasons || arg(11)=='next')
+   $query.= " group by r.Athlete order by f".$sort." desc ".pages_limit(1); 
+   else
+   $query.= " group by a.Last,a.First,a.Sex,r.age"; 
+  // $query.= " group by r.Athlete order by f".$sort." desc ".pages_limit(1);
+    if($rank_pre_seasons & arg(11)!='next' &  arg(11)==null)
+    {
+	    $query2= " SELECT SQL_CACHE Round(std(r.fina)) as f4,min(r.fina) as f3,max(r.fina) as f2,Round(avg(r.fina)) as f0, Count(*) as events, Sum(r.fina) as f1,";
+	   $query2.= "a.Athlete, a.Last, a.First, a.Sex, (r.age) as age, t.TCode, t.LSC FROM (((".$tm4db."result_".($season-1)." as r left join ".$tm4db."athlete_".($season-1)." as a on (r.ATHLETE=a.Athlete)) ".$filter_team_pre." ) left join ".$tm4db."meet_".($season-1)." as m on (r.Meet=m.Meet)) WHERE r.fina!=0  and ".$Where.' '.$Where2.' '.$Where_rank[1];
+
+	   $query2.= " group by a.Last,a.First,a.Sex,r.age";  
+	   //$query2.= " order by f".$sort." desc ".pages_limit(1);
+	    
+	   $query=$query.' UNION '.$query2." order by f".$sort." desc ".pages_limit(1);;
+    }
+   
+    $result = db_query($query);
+   //$output.=$query;
+   $pos = 0;
+   $pos2 = -1;
+   $point=NULL;
+   //Grouping
+   $First = false;
+   while ($object = db_fetch_array($result))
+     {
+
+	if($point != $object['f'.$sort])
+	  {
+	     $point = $object['f'.$sort];
+	     $pos++;
+	  }
+	$link='athlete/'.arg(1).'/top_times/'.$object['Athlete'];
+	if($rank_pre_seasons ==false || arg(11)=='next')
+	$rows[] = array((($pos ==$pos2)?'-':$pos),$object['f'.$sort],( ($object['Last']==NULL)?'Athlete not found':l(t($object['Last'].", ".$object['First']), $link)), $object['Sex'], $object['age'], $object['TCode'].'-'.$object['LSC'],$object['events'],$object[$fields[0]],$object[$fields[1]],$object[$fields[2]],$object[$fields[3]]);
+	else
+	$rows[] = array((($pos ==$pos2)?'-':$pos),$object['f'.$sort],( ($object['Last']==NULL)?'Athlete not found':$object['Last'].", ".$object['First']), $object['Sex'], $object['age'], $object['TCode'].'-'.$object['LSC'],$object['events'],$object[$fields[0]],$object[$fields[1]],$object[$fields[2]],$object[$fields[3]]);
+	if($pos != $pos2)
+	  $pos2 = $pos;
+     }
+
+   if (!$rows)
+     {
+	$rows[] = array(array('data' => t('There are no athletes results found matching your criteria, click '.l(t('here'), 'ranking/'.arg(1).'/'.arg(2).'/'.arg(3).'/'.arg(4).'/'.arg(5).'/'.arg(6).'/'.arg(7)).' to go back.'), 'colspan' => 11));
+     }
+   $output.= theme('table', $headers, $rows);
+?>

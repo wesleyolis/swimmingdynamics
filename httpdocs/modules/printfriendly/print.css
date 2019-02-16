@@ -1,0 +1,23 @@
+
+body {
+  padding: 5px;
+  color: #000;
+  background-color: #fffff;
+
+}
+div .tabs,div .tabs.primary{
+display:none;width:0px; height:0px;
+}
+
+.breadcrumb{
+display:none!important;
+display:none !important; width:0px; height:0px;
+}
+
+.noprint {
+display:none !important; width:0px; height:0px;
+}
+#no_print {
+display:none !important; width:0px; height:0px;
+}
+#img_no_print    { width: 0 !important; height: 0 !important;display:none !important; }

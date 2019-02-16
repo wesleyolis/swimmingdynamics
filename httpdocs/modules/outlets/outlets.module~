@@ -1,0 +1,129 @@
+<?php
+
+function outlets_menu($may_cache)
+{
+	if (!$may_cache)
+	{	 
+		 $items[] = array(
+				    'path' => 'admin/settings/outlets',
+				    'title' => t('Outlets'),
+				    'description' => t(''),
+				    'callback' => 'drupal_get_form',
+				    'callback arguments' => array('outlets_admin_settings'),
+				    'access' => user_access('administer site configuration'),
+				    'type' => MENU_NORMAL_ITEM, // optional
+				   );
+		
+		
+		$items[] = array('path' => 'provinces',
+				 'title' => t('Provinces'),
+				 'callback' => 'outlets_provinces',
+				 'access' => user_access('admin'),
+				 'weight' => -11);
+				 
+		$items[] = array('path' => 'provinces/list',
+				 'title' => t('List'),
+				 'access' => user_access('admin'),
+				 'type' => MENU_DEFAULT_LOCAL_TASK,
+				 'weight' => -11);
+		$items[] = array('path' => 'provinces/add',
+				 'title' => t('ADD'),
+				 'callback' => 'outlets_provinces_add',
+				 'access' => user_access('admin'),
+				 'type' => MENU_LOCAL_TASK,
+				 'weight' => -11);
+				 
+				 
+		$items[] = array('path' => 'areas',
+				 'title' => t('Areas'),
+				 'callback' => 'outlets_areas',
+				 'access' => user_access('admin'),
+				 'weight' => -11);
+				 
+		$items[] = array('path' => 'areas/list',
+				 'title' => t('List'),
+				 'access' => user_access('admin'),
+				 'type' => MENU_DEFAULT_LOCAL_TASK,
+				 'weight' => -11);
+		$items[] = array('path' => 'areas/add',
+				 'title' => t('ADD'),
+				 'callback' => 'outlets_areas_add',
+				 'access' => user_access('admin'),
+				 'type' => MENU_LOCAL_TASK,
+				 'weight' => -11);
+		
+		$items[] = array('path' => 'outlets',
+				 'title' => t('Outlets'),
+				 'callback' => 'outlets_outlets',
+				 'access' => user_access('admin'),
+				 'weight' => -11);
+				 
+		$items[] = array('path' => 'outlets/list',
+				 'title' => t('List'),
+				 'access' => user_access('admin'),
+				 'type' => MENU_DEFAULT_LOCAL_TASK,
+				 'weight' => -11);
+		$items[] = array('path' => 'outlets/add',
+				 'title' => t('ADD'),
+				 'callback' => 'outlets_outlets_add',
+				 'access' => user_access('admin'),
+				 'type' => MENU_LOCAL_TASK,
+				 'weight' => -11);
+				 
+				 
+		  $items[] = array('path' => 'provinces',
+				 'title' => t('Meets2'),
+				 'callback' => 'outlets_provinces',
+				 'access' => user_access('guest'),
+				 'weight' => 1);
+		
+		   
+	}
+	
+	return $items;
+}
+function outlets_perm()
+{
+return array('admin','guest');	
+}
+
+function outlets_admin_settings()
+{
+	$form['outlets_database'] = array('#title'=>'Database','#type'=>'textfield','#default'=>variable_get('outlets_database',''));
+	
+return system_settings_form($form);
+}
+
+function outlets_provinces()
+{
+	return 'provinces';
+}
+
+function outlets_provinces_add()
+{
+
+	
+	
+	return 'provinces add';
+}
+
+function outlets_areas()
+{
+	return 'areas';
+}
+
+function outlets_areas_add()
+{
+	return 'areas add';
+}
+
+function outlets_outlets()
+{
+	return 'Please select your province to view stores at least';
+}
+
+function outlets_outlets_add()
+{
+	return 'areas add';
+}
+?>

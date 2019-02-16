@@ -1,0 +1,4 @@
+name = Performance_Anaylsis
+description = "Swimming performance analysis for TM4 Database, this version feature's automated rankings updated, ignore's user abouts when running admin scripts" 
+version = "1.1beta"
+package = "Swimming"

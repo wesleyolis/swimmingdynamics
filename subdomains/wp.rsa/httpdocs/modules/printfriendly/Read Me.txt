@@ -1,0 +1,52 @@
+IN the includes folder.
+the file common.iinc
+need to replace the funtion with this one.
+Alternative you could wirte hook to trigger when this one is called, but this method is faster.
+
+ variable_set('drupal_css_preprocess_filenames',base_path().$preprocess_file.$no_module_preprocess2 . $output2 . $no_theme_preprocess2,false);
+
+function drupal_get_css($css = NULL) {
+  $output = '';
+  if (!isset($css)) {
+    $css = drupal_add_css();
+  }
+
+  $preprocess_css = variable_get('preprocess_css', FALSE);
+  $directory = file_directory_path();
+  $is_writable = is_dir($directory) && is_writable($directory) && (variable_get('file_downloads', FILE_DOWNLOADS_PUBLIC) == FILE_DOWNLOADS_PUBLIC);
+
+  foreach ($css as $media => $types) {
+    // If CSS preprocessing is off, we still need to output the styles.
+    // Additionally, go through any remaining styles if CSS preprocessing is on and output the non-cached ones.
+    foreach ($types as $type => $files) {
+      foreach ($types[$type] as $file => $preprocess) {
+        if (!$preprocess || !($is_writable && $preprocess_css)) {
+          // If a CSS file is not to be preprocessed and it's a module CSS file, it needs to *always* appear at the *top*,
+          // regardless of whether preprocessing is on or off.
+          if (!$preprocess && $type == 'module') {
+            $no_module_preprocess .= '<style type="text/css" media="'. $media .'">@import "'. base_path() . $file .'";</style>' ."\n";
+	    $no_module_preprocess2.= base_path() . $file .'|';
+          }
+          // If a CSS file is not to be preprocessed and it's a theme CSS file, it needs to *always* appear at the *bottom*,
+          // regardless of whether preprocessing is on or off.
+          else if (!$preprocess && $type == 'theme') {
+            $no_theme_preprocess .= '<style type="text/css" media="'. $media .'">@import "'. base_path() . $file .'";</style>' ."\n";
+	    $no_theme_preprocess2.= base_path() . $file .'|';
+          }
+          else {
+            $output .= '<style type="text/css" media="'. $media .'">@import "'. base_path() . $file .'";</style>' ."\n";
+	    $output2.= base_path() . $file .'|';
+          }
+        }
+      }
+    }
+
+    if ($is_writable && $preprocess_css) {
+      $filename = md5(serialize($types)) .'.css';
+      $preprocess_file = drupal_build_css_cache($types, $filename);
+      $output .= '<style type="text/css" media="'. $media .'">@import "'. base_path() . $preprocess_file .'";</style>'. "\n";
+    }
+  }
+ ******** variable_set('drupal_css_preprocess_filenames',(($is_writable && $preprocess_css)?(base_path().$preprocess_file):'').$no_module_preprocess2 . $output2 . $no_theme_preprocess2,false);
+  return $no_module_preprocess . $output . $no_theme_preprocess;
+}

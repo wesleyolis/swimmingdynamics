@@ -1,0 +1,37 @@
+<?php
+// $Id:
+
+/**
+ * Implementation of hook_install().
+ */
+function constant_contact_install() {
+  drupal_set_message(t('Constant Contact has been installed. Please visit !url_cfg to configure your settings. Visit !url_import to import your existing users.', array('!url_cfg' => l(t('Constant Contact Settings'), 'admin/settings/constant_contact'), '!url_import' => l(t('Constant Contact Import Users'), 'admin/settings/constant_contact_import'))));
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function constant_contact_uninstall() {
+  $variables = array(
+    'constant_contact_username',
+    'constant_contact_password',
+    'constant_contact_addurl',
+    'constant_contact_delurl',
+    'constant_contact_sendemail',
+    'constant_contact_email_subject',
+    'constant_contact_email_body',
+    'constant_contact_allowanon',
+    'constant_contact_lists',
+  );
+
+  foreach ($variables as $variable) {
+    variable_del($variable);
+  }
+
+  db_query("DELETE FROM {variable} WHERE name LIKE 'constant_contact_blocktext_%'");
+
+  cache_clear_all('*', 'cache', TRUE);
+  cache_clear_all('*', 'cache_filter', TRUE);
+  cache_clear_all('*', 'cache_menu', TRUE);
+  cache_clear_all('*', 'cache_page', TRUE);
+}

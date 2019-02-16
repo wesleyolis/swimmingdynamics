@@ -1,0 +1,30 @@
+<?php
+
+
+function phptemplate_breadcrumb($breadcrumb) {
+  if (!empty($breadcrumb)) {
+
+// return '<div class="breadcrumb"><div style="float:left;width:100%;">'. implode(' › ', $breadcrumb) .'</div>'.printfriendly()."</div>";
+
+//return '<div class="breadcrumb"><div style="float:right;width:100px;padding-right:5px"><img align="right" src="misc/feed.png">'."</div><div style='float:right;width:90%'>". implode(' › ', $breadcrumb) ."</div></div>";
+
+
+   return '<div class="breadcrumb" ><table style="border-style: none; border-width:0px" cellspacing="0" cellpadding="0" border="0" width="100%"><thead><tr><td>'. implode(' › ', $breadcrumb) ."</td><td align='right'>".printfriendly()."</td></tr></thead></table></div>";
+  }
+}
+
+function printfriendly()
+{
+	drupal_add_js('modules/printfriendly/js/printfriendly.js',null,'header',true,TRUE);
+
+	$style='';
+  $stylesheets = drupal_add_css();
+	foreach ($stylesheets as $stylesheet)
+	foreach ($stylesheet as $sub)
+	foreach ($sub as $key=>$theme)
+	  $style.=$key.'|'; 
+
+return "<a  href=\"javascript:printVersion('modules/printfriendly/print.css|".$style."');\"><img width='25px' height='25px' src='modules/printfriendly/images/printer.gif'></a>";
+}
+
+?>

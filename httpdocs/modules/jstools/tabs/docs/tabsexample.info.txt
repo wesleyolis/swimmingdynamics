@@ -1,0 +1,5 @@
+; $Id: tabsexample.info.txt,v 1.1 2007/03/10 15:54:35 nedjo Exp $
+name = Tabs Example
+description = An example tabs implementation.
+package = Javascript tools
+version = "$Name: DRUPAL-5--0-6 $"

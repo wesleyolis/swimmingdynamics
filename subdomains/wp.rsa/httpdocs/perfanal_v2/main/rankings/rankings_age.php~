@@ -1,0 +1,72 @@
+<?php
+	require('ranking_config.php');
+	require('rankings_config_sanc.php');
+
+	drupal_set_title($pref_head.$type[$_GET['type']].' Rankings - Age Group & Gender'."<br/><small>".$heading.' '.Course(1,$_GET['c']).' </small>');
+	$breadcumb[]  = l2('Ranking Catagories','','index.php');
+	if($lsc!='')
+	{
+		$breadcumb[] = l2('LSC Filter',substr($curr_param,0,strrpos($curr_param,'&lsc')),'rankings_lsc.php');
+	}
+	if(($config['rank_time_meet_filter'] == '' && $_GET['type'] != 'fina') || ($config['rank_fina_meet_filter'] == '' && $_GET['type'] == 'fina'))
+	{
+		$breadcumb[] = l2('Meet Sanction',substr($curr_param,0,strrpos($curr_param,'&sanc')),'rankings_geo.php');
+	}
+	$breadcumb[] = l2('Course',substr($curr_param,0,strrpos($curr_param,'&c')),'rankings_course.php');
+	setseasons_breadcrumb($breadcumb);
+	
+	if($_GET['type']=='team_points')
+	$page_link = 'rankings_team_points.php';
+	else
+	if($_GET['type']=='indi_points')
+	$page_link = 'rankings_indi_points.php';
+	else
+	if($_GET['type']=='time')
+	$page_link = 'rankings_time_str_dis.php';
+	else
+	if($_GET['type']=='fina')
+	$page_link = 'rankings_fina_str_dis.php';
+	else
+	$page_link='index.php';
+	
+	
+	if($_GET['op']!=null)
+	$age_groups = Array(99,011,1114,1516,1699,1718,1930,3150,5099);
+	else
+	$age_groups = Array(99,8,909,910,1010,1011,1111,1112,1212,1213,1313,1314,1414,1415,1515,1516,1616,1617,1718,1818,1899);
+	
+	setseasons_breadcrumb($breadcrumb);
+	$headers[] = array('data' => t('Female'), 'style' => 'width:6.5em;');
+	$headers[] = array('data' => t('Male'), 'style' => 'width:6.5em;');
+	$headers[] = array('data' => t('Mixed'), 'style' => 'width:6.5em;');
+	foreach($age_groups as $gp)
+	  {
+	     $rows[] = array(l2(Age($gp),$curr_param.'&gen=female&lo='.floor($gp/100).'&hi='.($gp%100),$page_link),l2(Age($gp),$curr_param.'&gen=male&lo='.floor($gp/100).'&hi='.($gp%100),$page_link),l2(Age($gp),$curr_param.'&gen=mixed&lo='.floor($gp/100).'&hi='.($gp%100),$page_link));
+	  }
+
+	  //custom age group.
+	  
+	  $output.="<form style='padding:0.5em 0em 0em 0em;' action='".$page_link."'  method='get'>";
+	  foreach($_GET as $key => $val)
+	  {
+		$output.="<input type='hidden' name='".$key."' value='".$val."'>";  
+	  }
+	$output.="<span style='padding:0em 0.5em 0em 0.5em;'>Gender</span><select name='gen'><option value='female'>Female</option><option value='male'>Male</option><option value='mixed'>Mixed</option></select>";
+	$output.="<span style='padding:0em 0.5em 0em 0.5em;'>Lower - Age</span><select name='lo'>";
+	$output.="<option value='0'>& Under</option>";
+	for($i=1;$i<=99;$i++)
+		$output.="<option value='".$i."'>".$i."</option>";
+	$output.="</select>";
+	
+	$output.="<span style='padding:0em 0.5em 0em 0.5em;'>Upper - Age</span><select name='hi'>";
+	$output.="<option value='99'>& Over</option>";
+	for($i=1;$i<=98;$i++)
+		$output.="<option value='".$i."'>".$i."</option>";
+	
+	$output.="</select>";
+	$output.="&nbsp;&nbsp;<input type='submit' value='Proceed..'/></form>";
+	  
+	$output.= theme_table($headers, $rows,null,null);
+	
+	render_page();
+?>

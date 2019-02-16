@@ -1,0 +1,167 @@
+<?php
+global $perfanal_url;
+$perfanal_url='perfanal_v2/';
+
+function perfanal_v2_perm()
+{
+   return array('access performance analysis', 'admin performance analysis','aditional performance analysis');
+}
+
+function perfanal_v2_menu($may_cache)
+{
+	global $perfanal_url;
+	$domain = $_SERVER["SERVER_NAME"];
+
+   $items = array();
+   if ($may_cache)
+     {
+	    require($perfanal_url.'main_config.php');
+
+	    foreach($sites as $domain_reg=>$data)
+		 {
+			 if(preg_match('/'.$domain_reg.'/',$domain))
+			 {
+				 foreach($data as $url_reg=>$conf)
+				 {
+					 $items[] = array('path' => 'perfanal/'.$url_reg,
+					 'title' => t(ucfirst($url_reg)),
+					 'callback' => 'perfanal_v2_db',
+					 'access' => user_access('access performance analysis'),
+					 'type' =>MENU_NORMAL_ITEM,
+					 'weight' => 1);
+					
+					 $title=(($conf['settings']['cntry']!='')?$conf['settings']['cntry']:'').(($conf['settings']['cntry']!='' & $conf['settings']['lsc']!='')?'-':'').(($conf['settings']['lsc']!='')?$conf['settings']['lsc']:''); 
+					 
+					 
+					 $items[] = array('path' => 'perfanal/'.$url_reg.'/seasons',
+					      'title' => t('Select Seasons '.$value),
+					      'callback' => 'perfanal_v2_redirect',
+					      'access' => user_access('access performance analysis'),
+					      'weight' => -5);
+					 
+					 $items[] = array('path' => 'perfanal/'.$url_reg.'/meets',
+					      'title' => t('Meets '.$value),
+					      'callback' => 'perfanal_v2_redirect',
+					      'access' => user_access('access performance analysis'),
+					      'weight' => -4);
+				
+							     
+							   
+					     $items[] = array('path' => 'perfanal/'.$url_reg.'/ranking',
+							      'title' => t($title.' Rankings '.$value),
+							      'callback' => 'perfanal_v2_redirect',
+							      'access' => user_access('access performance analysis'),
+							      'weight' => -3);
+				
+					     $items[] = array('path' => 'perfanal/'.$url_reg.'/athlete',
+							      'title' => t('Athlete Times '.$value),
+							      'callback' => 'perfanal_v2_redirect',
+							      'access' => user_access('access performance analysis'),
+							      'weight' => -2);
+				
+					     $items[] = array('path' => 'perfanal/'.$url_reg.'/standards',
+							      'title' => t('Standards '.$value),
+							      'callback' => 'perfanal_v2_redirect',
+							      'access' => user_access('access performance analysis'),
+							      'weight' => -1);
+				
+					     $items[] = array('path' => 'perfanal/'.$url_reg.'/records',
+							      'title' => t('Records '.$value),
+							      'callback' => 'perfanal_v2_redirect',
+							      'access' => user_access('access performance analysis'),
+							      'weight' => 0);
+						
+				
+						$items[] = array('path' => 'perfanal/'.$url_reg.'/fina',
+								 'title' => t('Fina Points'),
+								 'callback' => 'perfanal_v2_redirect',
+								 'access' => user_access('access performance analysis'),
+								 'weight' => 6);
+								 
+						 $items[] = array('path' => 'perfanal/'.$url_reg.'/layout',
+						 'title' => t('Records Breakers'),
+						 'callback' => 'perfanal_layout',
+						 'access' => user_access('access performance analysis'),
+						 'type' =>MENU_CALLBACK,
+						 'weight' => 10);
+						 
+					 }
+				 }
+			 }
+	
+     }
+	return $items;
+}
+
+function perfanal_v2_db()
+{	
+	global $perfanal_url;
+	require($perfanal_url.'main_config.php');
+	
+	$domain = $_SERVER["SERVER_NAME"];
+	$output=null;
+	$r= new HttpRequest('http://'.$app_domain.$app_domain_dir.'db_cover_page/'.$domain.'/'.arg(1).'.php', HttpRequest::METH_GET);
+	try {
+		$r->send();
+	$output =  $r->getResponseBody();
+	} catch (HttpException $ex) {
+		//$output = $ex;
+	}
+	
+
+	    foreach($sites as $domain_reg=>$data)
+		 {
+			 if(preg_match('/'.$domain_reg.'/',$domain))
+			 {
+				 foreach($data as $url_reg=>$conf)
+				 {
+				 }
+			 }
+			 
+		 }
+		 
+	drupal_set_title($conf['title']);
+	if($output == null || strpos($output,'Page not found')!=FALSE)
+	{
+		$output='<br>'.$conf['desc'].'<br><br>Custom db page not avalible.';
+	}
+	return $output; 
+}
+
+function perfanal_v2_redirect()
+{
+	global $perfanal_url;
+	require($perfanal_url.'main_config.php');
+	$ref = $_SERVER['HTTP_REFERER'];
+	$db=null;
+	$pos = strpos($ref,'&db=')+4;
+	if($pos>=0)
+	{
+		$pos2 = strpos($ref,'&',$pos);
+		if($pos2==false)
+		$pos2=strlen($ref);
+			$db = substr($ref,$pos,$pos2-$pos);
+	}
+	$ss=null;
+	if($db==arg(1))
+	{
+		$pos = strpos($ref,'&ss=')+4;
+		if($pos>=0)
+		{
+			$pos2 = strpos($ref,'&',$pos);
+			if($pos2==false)
+				$pos2=strlen($ref);
+			$ss = substr($ref,$pos,$pos2-$pos);
+		}
+	}
+	
+	http_redirect('http://'.$app_domain.$app_domain_dir.'main/'.arg(2).'/index.php?db='.arg(1).(is_null($ss)?'':'&ss='.$ss),null, false, HTTP_REDIRECT_PERM);	
+}
+function perfanal_layout()
+{
+	drupal_set_title('');
+	drupal_set_breadcrumb(array('breadcrumb0123456789'));
+	return	'page_contents0123456789';
+}
+
+?>

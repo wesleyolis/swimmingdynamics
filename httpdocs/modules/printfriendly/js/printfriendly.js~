@@ -1,0 +1,43 @@
+
+
+
+
+function printVersion(style)
+{
+try
+{
+	data = parent.document.getElementById('main').innerHTML;
+	stylesheet = style.split('|');
+	style='';
+	for(i=0;i<stylesheet.length-1;i++)
+	if(stylesheet[i] !='')
+	style+=("<style type='text/css'>@import '"+stylesheet[i]+"';</style>");
+	
+	data=style+"<body>"+data+"</body>";
+	
+	parent.document.write(data);
+	parent.document.close();
+	
+	alert("Please not that you may need to set-up your browser print margins.\n\nNote for sum pages change the page orientation\n to landscape allows wide tables (records,entries) to print properly\n\nClick Cancel to the print window, goto print preview, then change the margins acourdingly");
+	parent.window.print();
+}
+catch(e)
+{
+	//On error redirect to printable server generated page
+	alert('Error Browser does nto support, u must set the redirection Page!!');
+}
+
+/*
+printwin = window.open (parent.document.location,"Print Version","");
+
+for(i=0;parent.document.StyleSheet.length;i++)
+alert(parent.document.StyleSheet[i].href);
+
+printwin.document.write("<style type='text/css' media='all'>@import 'themes/bluemarine/print.css';</style>");
+printwin.document.write(data);
+printwin.document.close();
+printwin.window.print();
+*/
+
+}
+

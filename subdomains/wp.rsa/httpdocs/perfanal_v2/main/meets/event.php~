@@ -1,0 +1,36 @@
+<?php
+
+require('../../main_include.php'); 
+
+$query = "select m.MName,e.Lo_Hi, e.Distance, e.Stroke, e.Course, e.I_R from ".$db_name."mtevent e inner join ".$db_name."meet m  on (e.Meet=m.Meet) where m.Meet=".inj_int($_GET['m'])." And e.MtEv=".inj_int($_GET['ev']);
+$result = db_query($query);
+
+if(!mysql_error())
+{
+	$object = mysql_fetch_object($result);
+	
+	drupal_set_title($object->MName.' Meet  - Age Group Results '.$_GET['ss'].'-'.($_GET['ss']+1));
+	setseasons_breadcrumb(array(l2('Meets',null,'index.php'),l2('Events','&m='.$_GET['m'].'&age=All&gen=All','events.php')));
+	//.' Meet'."&nbsp;<br><p><b><small>Event: ".arg(4).' &nbsp;&nbsp;'.Age($object->Lo_Hi).' &nbsp;'.$object->Distance.'m &nbsp;'.Stroke($object->Stroke).' &nbsp;&nbsp;'.IR($object->I_R).' &nbsp;'.Course(1,$object->Course).'</small></b></p>');
+	
+	$output .= "<div style='padding:0.5em 0.5em 0.5em 0em;' class='title' align=\'center\'>"."<b>Event: ".$_GET['ev'].' &nbsp;&nbsp;'.Age($object->Lo_Hi).' &nbsp;'.$object->Distance.'m &nbsp;'.Stroke($object->Stroke).' &nbsp;&nbsp;'.IR($object->I_R).' &nbsp;'.Course(1,$object->Course)."</b></div>";
+	
+	$output.=''.l2('All Events Results','m='.$_GET['m'].'&ev='.$_GET['ev'],(($object->I_R =='I')?'indi_results.php':'relay_results.php')).'<br>';
+	
+	$headers[] = array('data' => t('Event'), 'width' => '0em');
+	$headers[] = array('data' => t('Gender'), 'width' => '0em');
+	$headers[] = array('data' => t('Age'), 'width' => '0em');
+	$headers[] = array('data' => t('Div'), 'width' => '0em');
+	
+	$result = db_query("Select MtEvent, MtEvX, Sex, Lo_Hi, I_R,Division,Results FROM ".$db_name."mtevent WHERE Meet=".inj_int($_GET['m'])." And MtEv=".inj_int($_GET['ev'])." order by MtEvX");
+	if(!mysql_error())
+	while ($object = mysql_fetch_object($result))
+	 {
+	    //$link = 'meets/'.arg(1).'/'.(($object->I_R =='I')?'event/results/':'event/result/').$object->MtEvent;
+	    $rows[] = array(($object->Results>0)?l2(t($object->MtEvX),'evx='.$object->MtEvent,($object->I_R =='I')?'indi_results.php':'relay_results.php'):t($object->MtEvX),Gender($object->Sex), Age($object->Lo_Hi),$object->Division);
+	
+	 }
+	$output.= theme_table($headers, $rows,array('id'=>'hyper','class'=>'hyper'),null);
+}
+render_page();
+?>

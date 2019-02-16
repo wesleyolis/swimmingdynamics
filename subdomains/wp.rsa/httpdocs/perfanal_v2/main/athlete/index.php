@@ -1,0 +1,53 @@
+<?php
+	
+	require('../../main_include.php');
+
+	drupal_set_title('Athlete Personal Times');
+     
+	$output="<form action='".url(null,'list_athletes.php')."'  method='post'>";
+	$output.="<div><div class='form-item'><label for='edit-filteropt'>Search (Name or & Surname): </label> ";
+	$output.="<input type='text' maxlength='40' name='filteropt' id='edit-filteropt'  size='45' value='' class='form-text form-autocomplete' /> ";
+	$output.="<div class='description'>Please note this is an autocomplete search box.<br>Therefore pausing after a typed phrase will yield a match list.<br><b> Example type 'Merwe' then stop typing.<br>I would advise one to leave out vd, van, de.</b><br><b>Make use of up and down arrow key to select person and then FOLLOWED BY DOUBLE/TRIPLE 'ENTER'<b></div> ";
+	$output.="</div> <input class='autocomplete' type='hidden' id='edit-filteropt-autocomplete' value='".url('/','auto.php')."' disabled='disabled' /><div class='form-item'> ";
+	$output.="<label for='edit-club'>Clubs: </label> ";
+	$output.="<select name='club' class='form-select' id='edit-club' ><option value='ALL'>All Clubs</option>";
+	
+	$results = db_query("Select Team, RPAD(TCode,5,' ') as TCode ,TName From ".$db_name."team Order BY Tcode",true);
+	if(!mysql_error())
+	while($object = mysql_fetch_object($results))
+	$output.="<option value='".$object->Team."'>".$object->TCode." - ".$object->TName."</option>";
+	$output.="</select></div> ";
+	
+	$output.="<div class='form-item'> ";
+	$output.="<label for='edit-filterby'>Name & Alpha: </label> ";
+	$output.="<select name='filterby' class='form-select' id='edit-filterby' ><option value='an'>All Names</option><option value='ln'>Last Name</option><option value='fn'>First Name</option><option value='A'>A</option><option value='B'>B</option><option value='C'>C</option><option value='D'>D</option><option value='E'>E</option><option value='F'>F</option><option value='G'>G</option><option value='H'>H</option><option value='I'>I</option><option value='J'>J</option><option value='K'>K</option><option value='L'>L</option><option value='M'>M</option><option value='N'>N</option><option value='O'>O</option><option value='P'>P</option><option value='Q'>Q</option><option value='R'>R</option><option value='S'>S</option><option value='T'>T</option><option value='U'>U</option><option value='V'>V</option><option value='W'>W</option><option value='X'>X</option><option value='Y'>Y</option><option value='Z'>Z</option></select> </div> ";
+	
+	$output.="<label for='edit-filterby'>Athlete Catagory </label><br>";
+	$output.="<select name='group' class='form-select'><option value='All'>All Athlete's</option>";
+	
+	$results = db_query("Select c.ABBR, c._desc from ".$db_name."code as c where c.type=0 Order BY c.abbr",true);
+	if(!mysql_error())
+	while($object = mysql_fetch_object($results))
+	$output.="<option value='".$object->ABBR."'>".$object->ABBR." - ".$object->_desc."</option>";
+	$output.="</select></div> ";
+	
+	$output.="<input type='submit' name='op' id='edit-submit' value='Search'  class='form-submit' /> ";
+	$output.="<input type='hidden' name='form_id' id='edit-perfanal-athlete-filter-form' value='perfanal_athlete_filter_form'  /> </div></form>";
+	$output.="<script type='text/javascript' defer='defer'>\ndocument.getElementsByName('filteropt')[0].focus();\n</script>";
+	$output.='<span style=\'display:none\'>'.l2('all athletes','','list_athletes.php').'</span>';
+	
+	
+	$js_include.= "<script type='text/javascript' src='".$app_relative."misc/jquery.js'></script>";
+	$js_include.= "<script type='text/javascript' src='".$app_relative."misc/drupal.js'></script>";
+	$js_include.= "<script type='text/javascript' defer='defer' src='".$app_relative."misc/autocomplete.js'></script>";
+	
+
+	render_page();
+     
+?>
+
+
+
+
+
+  

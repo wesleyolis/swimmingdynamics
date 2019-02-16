@@ -1,0 +1,37 @@
+<?php
+	require('ranking_config.php');
+	
+	drupal_set_title($pref_head."Rankings Information");
+
+	$update = $config['ranking_update'];
+	$period = $config['ranking_period'];
+	$rank_days_before = $config['ranking_days_before'];
+	$rank_from_option = $config['rank_from'];
+	     
+        $Sd = $config['ranking_dd'];
+	$Sm = $config['ranking_mm'];
+        $from_date = $season.'-'.$Sm.'-'.$Sd;
+	
+	$output.="<br/>The current ".$pref_head." rankings as of ".$_GET['d']."<br/><br/>";
+	if($rank_from_option=='y')
+	$output.='Results from '.$from_date.'.<br/><br/>';
+	if($rankings_pedicative==false)
+	if($running_config['ranking_type']=='archive')
+	  {
+	     $output.="These are Archived Ranks and will not be updated.<br/><br/>";
+	  }
+	else
+	  {
+	     If($update=='M')
+	       $output.="They are updated on a Monthly basis.<br/><br/>";
+	     else
+	       $output.="They are updated every ".$period." Weeks.<br/><br/>";
+	  }
+
+	$output.="Athlete's age's are determined as at the current rankings date. (".$_GET['d'].")<br/>";
+	$output.="Note: The age group filters look at the athlete's age as of the current rankings date.<br/><br/>";
+	$output.="Meet Results that are consider for rankings must have ended ".$rank_days_before." days prior to the rankings date. (".$_GET['d'].")<br/>";
+	$output.="To view list of meets including in this rankings set click the Meets link on rankings page.<br/>";
+
+	render_page();
+?>

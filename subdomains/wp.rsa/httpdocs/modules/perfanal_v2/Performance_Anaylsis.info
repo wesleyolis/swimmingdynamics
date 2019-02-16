@@ -1,0 +1,6 @@
+; $Id$
+name = Performance Anaylsis
+description = Swimming performance analysis for TM4 Database, this version feature's automated rankings updated, ignore's user abouts when running admin scripts
+package = Swimming
+version = VERSION
+core = 6.x

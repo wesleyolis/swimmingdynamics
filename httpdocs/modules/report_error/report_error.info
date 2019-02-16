@@ -1,0 +1,5 @@
+; $Id$
+name = Report Error
+description = Report Errors botton appear in breadcrumb of each, page. 
+Version = beta 1
+package = ""

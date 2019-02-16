@@ -1,0 +1,42 @@
+<?php
+
+if (!function_exists("phptemplate_breadcrumb"))
+{
+function phptemplate_breadcrumb($breadcrumb) {
+ 
+
+ return '<div class="breadcrumb" style="width:97%;"><div style="float:left;">'.((!empty($breadcrumb))?implode(' › ', $breadcrumb):'').'</div><div style="float:right;width:40px;" align="left">'.printfriendly().'</div></div>';
+
+//return '<div class="breadcrumb"><div style="float:right;width:100px;padding-right:5px"><img align="right" src="misc/feed.png">'."</div><div style='float:right;width:90%'>". implode(' › ', $breadcrumb) ."</div></div>";
+
+
+ //  return '<div class="breadcrumb" style="width:95%;"><table style="float:right;border-style: none; border-width:0px" cellspacing="0" cellpadding="0" border="0" width="100%"><thead><tr><td>'. implode(' › ', $breadcrumb) ."</td><td width='40px' align='right'>".printfriendly()."</td></tr></thead></table></div>";
+ //return '<div class="breadcrumb"><div style="float:left;">'. implode(' › ', $breadcrumb) .'</div><div  style="float:right" align="right"><div style="float:right;width:100px;">'.printfriendly().'</div></div></div>';
+
+  
+  
+}
+}
+function printfriendly()
+{
+	drupal_add_js('modules/printfriendly/js/printfriendly.js',null,'header',false,TRUE);
+//	$style = variable_get('drupal_css_preprocess_filenames', false);
+	/*if(!$style)
+	{
+		$style='';
+		$stylesheets = drupal_add_css();
+		foreach ($stylesheets as $stylesheet)
+		foreach ($stylesheet as $sub)
+		foreach ($sub as $key=>$theme)
+		  $style.=$key.'|'; 
+	}
+	  	*/
+
+
+
+
+return "<a  href=\"javascript:printVersion('/modules/printfriendly/print.css|');\"><img width='25px' height='25px' src='/modules/printfriendly/images/printer.gif'></a>";
+
+}
+
+?>

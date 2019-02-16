@@ -1,0 +1,223 @@
+<?php
+$LSeason = $season;
+		       		  $result = db_query("select m.*,a.*, extract(YEAR FROM from_days(datediff(IF(m.AgeUp is null,m.Start,m.AgeUp), a.Birth))) as Age from ".$tm4db.".meet_".$season." as m, ".$tm4db.".athlete_".$LSeason." as a Where m.meet=%d and a.Athlete=%d",arg(6),arg(4));
+		
+				  $object = db_fetch_object($result);
+				  if($object ==null)
+				    {
+				       drupal_set_message('meet not Found');
+				       drupal_goto('athlete/'.arg(1).'/standards/type/'.arg(4).'/'.arg(5));
+				    }
+		
+				  $enforce = $object->EnforceQualifying;
+				  $enterqt = $object->EnterAtQTime;
+				  $coursepref = substr($object->Course, 0, 1);
+				  $multi = (($object->Course == 'L' || $object->Course == 'LO')?0:(($object->Course == 'S'||$object->Course == 'SO')?1:(3+(($coursepref=='L')?0:1))));
+				  $meet = arg(6);
+				  $std=strtolower(arg(5));
+				  $std_qt=arg(7);
+				  $std_qt_name=arg(8);
+				  $age = $object->Age;
+				  $since = $object->Since;
+				  $since = ($since ==null || $since=='0000-00-00 00:00:00')?null:$since;
+				  $restrictbest = $object->RestrictBest;
+
+				  $sex = $object->Sex;
+				  $type = $object->Type;
+				  $min_age = $object->MinAge;
+				  $min_age = ($min_age==null)?0:$min_age;
+				  $athlete = arg(4);
+				  
+				       $output.= athlete_heading($tm4db,$season,arg(4));
+		
+		
+				       $output.="<table border='0' width='100%'><tr><td valign='top'>";
+				      // .l('Meet Group','meets/'.$season.'/standard/meets/'.arg(4).'/'.arg(6))
+				       $output.='<br>Meet Group: '.strtoupper($std).' - '.$std_qt_name.'<div id="noprint"><br><br>';
+				       $output.="Age Update date: ".get_date((($ageUp !=null)?$ageUp:$object->Start))." (".$age."yrs)<br><br>";
+				       $output.="Qualifying Times Enforced: ".yesno($object->EnforceQualifying);
+				       $output.="<br><br>Min Open Age: ".hasvalue('',$min_age);
+		
+				       $output.="</div></td><td width='250px' valign='top'><div id='noprint'><br>".l("Course: ".$object->Course,'meets/'.$LSeason.'/info/'.arg(5))."<br><br>N.B Border Colors Apply to Slower than qt times.<br><br><br>Maxmium Entries: ".hasvalue('',$object->MaxIndEnt)."</td></div><td align='right'>";
+		
+				       $output.="<div id='noprint'><table class='entries' border='0' cellpadding='4px' width='359px'>";
+		
+				       $output.="<tr><td colspan='2'><b>Colors Key:</b></td></tr>";
+				       $output.="<tr><td width='101' class='green'>Green</td><td><b>May enter with pleasure</b></td></tr>";
+				       $output.="<tr><td width='101' class='yellow min_yellow'>Yellow/ Orange-border</td><td><b>Possible entry</b>, depends on  meet rules. haven't met qt times, but qt times aren't being enforced! </td></tr>";
+				       $output.="<tr><td width='101' class='red min_red'>Red/ Brown-border</td><td><b>May not enter</b> as one does not meet pre-requisites for event.</td></tr>";
+				       $output.="</table></div>";
+		
+				       $output.="</td></tr><tr><td colspan='3'>";
+				  
+		
+				  $output.='';
+
+
+
+
+				  	$stdata = new STD($tm4db,$season,$std,'L',$age,'M');
+					print_r($stdata->desc);
+					print_r($stdata->data);
+
+					echo course_conversion($tm4db,$season);
+
+
+							/*
+							Pref is the used for order of selection, of which course comes first.
+							qt if 1 means time qualifies for entry, if 2 then he does not qulify but it is depened on weather qt times are enforced.
+							qt 3 means time does not qualify, because there are qt times avalible just not for that course.
+							qt of less than 10 means he does not meet the slower than qt time, but these times are not enforced.
+							qt larger than 20 means does no qualify.
+							*/
+				  if($object->Course=='LO' ||$object->Course=='LS' ||$object->Course=='SL' ||$object->Course=='SO' || $object->Course=='S' || $object->Course=='L')
+				    {
+					    
+				       $query="";
+				       $query.="SELECT SQL_CACHE f.*, min(f.qt) as qt, min(f.pref) as pref, min(f.conv) From ("; //select final information
+				       $query.="SELECT h.* From (";// orders envents for preferance selection
+		
+				       $query.="SELECT f.*, min(f.SCORE) as SCORE2 From ("; //limits times to top time in each course
+				       $query.="SELECT t.* From ("; //test all times
+				        if($object->Course=='LO')
+					 {
+						 $qtset="  (e.F".($std_qt+12).">0) Or (e.S".($std_qt+12).">0) ";
+					    //long course only query
+					    $query.=" SELECT r.I_R,e.F".$std_qt.",e.S".$std_qt.",e.F".($std_qt+12).",e.S".($std_qt+12).",((e.Lo_Age*100)+e.Hi_Age) as Lo_Hi,e.Sex,e.Stroke,e.Distance,r.SCORE,r.Course,m.MName,m.Start,r.Score as conv,1 as pref,If((e.S".($std_qt+12).">0),If(e.S".($std_qt+12).">=r.Score,11,12),11) + If((e.F".($std_qt+12).">0),If(e.F".($std_qt+12)."<=r.Score,0,-10),0) as qt ";
+					    $query.=" From (".$tm4db.".result_".$season." as r inner JOIN ".$tm4db.".".$std."_".$LSeason." as e on (e.I_R='I'".(($age < $min_age)?'and e.Hi_Age!=99':'')." and ((r.DISTANCE = e.DISTANCE and r.STROKE=e.STROKE)) and (e.Sex='".$sex."') and e.Lo_Age <= ".$age." AND e.Hi_Age >= ".$age."))";
+					    $query.=" inner join ".$tm4db.".meet_".$season." as m on (r.Meet = m.Meet ".(($since ==null)?'':"and m.Start >= '".$since."'").((!$restrictbest)?'':" and m.Type='".$type."'").")";
+					    $query.=" Where r.NT=0 and r.I_R!='R' and r.Course='L'  and r.ATHLETE =".$athlete;
+
+					 }
+		
+				       if($object->Course=='LS') //Considers Muti course cut meets
+					 {
+						$qtset=" (e.F".$std_qt.">0) Or (e.F".($std_qt+12).">0) Or (e.S".($std_qt+12).">0) Or (e.S".$std_qt.">0) "; 
+						 
+					    //long course query
+					    $query.=" SELECT r.I_R,e.F".$std_qt.",e.S".$std_qt.",e.F".($std_qt+12).",e.S".($std_qt+12).",((e.Lo_Age*100)+e.Hi_Age) as Lo_Hi,e.Sex,e.Stroke,e.Distance,r.SCORE,r.Course,m.MName,m.Start,r.Score as conv,1 as pref,If((e.S".($std_qt+12).">0) Or (e.S".$std_qt.">0),If(e.S".($std_qt+12).">0,If(e.S".($std_qt+12).">=r.Score,11,12),13),11) + If((e.F".$std_qt.">0) Or (e.F".($std_qt+12).">0),If((e.F".($std_qt+12).">0),If(e.F".($std_qt+12)."<=r.Score,0,-10),10),0) as qt ";
+					    $query.=" From (".$tm4db.".result_".$season." as r inner JOIN ".$tm4db.".".$std."_".$LSeason." as e on (e.I_R='I'".(($age < $min_age)?'and e.Lo_Hi!=99':'')." and ((r.DISTANCE = e.DISTANCE and r.STROKE=e.STROKE)) and (e.Sex='".$sex."') and e.Lo_Age <= ".$age." AND e.Hi_Age >= ".$age."))";
+					    $query.=" inner join ".$tm4db.".meet_".$season." as m on (r.Meet = m.Meet ".(($since ==null)?'':"and m.Start >= '".$since."'").((!$restrictbest)?'':" and m.Type='".$type."'").")";
+					    $query.=" Where r.NT=0 and r.I_R!='R' and r.Course='L'  and r.ATHLETE =".$athlete;
+		
+					    //Short course query
+					    $query.=" union SELECT r.I_R,e.F".$std_qt.",e.S".$std_qt.",e.F".($std_qt+12).",e.S".($std_qt+12).",((e.Lo_Age*100)+e.Hi_Age) as Lo_Hi,e.Sex,e.Stroke,e.Distance,r.SCORE,r.Course,m.MName,m.Start,".course_conversion($tm4db,$season)." as conv,2 as pref,If((e.S".($std_qt+12).">0) Or (e.S".$std_qt.">0),If(e.S".$std_qt.">0,If(e.S".$std_qt.">=r.Score,11,12),13),11) + If((e.F".$std_qt.">0) Or (e.F".($std_qt+12).">0),If((e.F".$std_qt.">0),If(e.F".$std_qt."<=r.Score,0,-10),10),0) as qt ";
+					    $query.=" From (".$tm4db.".result_".$season." as r inner JOIN ".$tm4db.".".$std."_".$LSeason." as e on (e.I_R='I'".(($age < $min_age)?'and e.Lo_Hi!=99':'')." and ((r.DISTANCE = e.DISTANCE and r.STROKE=e.STROKE)) and (e.Sex='".$sex."') and e.Lo_Age <= ".$age." AND e.Hi_Age >= ".$age."))";
+					    $query.=" inner join ".$tm4db.".meet_".$season." as m on (r.Meet = m.Meet ".(($since ==null)?'':"and m.Start >= '".$since."'").((!$restrictbest)?'':" and m.Type='".$type."'").")";
+					    $query.=" Where r.NT=0 and r.I_R='I' and r.Course='S'  and r.ATHLETE =".$athlete;
+		
+					 }
+		
+				       if($object->Course=='L') //Covert all times to long course then Consider them, note preferance (pref is equal here =1)
+					 {
+						 $qtset="  (e.F".($std_qt+12).">0) Or (e.S".($std_qt+12).">0) ";
+					    //long course query
+					    $query.=" SELECT r.I_R,e.F".$std_qt.",e.S".$std_qt.",e.F".($std_qt+12).",e.S".($std_qt+12).",((e.Lo_Age*100)+e.Hi_Age) as Lo_Hi,e.Sex,e.Stroke,e.Distance,r.SCORE as SCORE,r.Course,m.MName,m.Start,r.Score as conv,1 as pref,If((e.S".($std_qt+12).">0),If(e.S".($std_qt+12).">=r.Score,11,12),11) + If((e.F".($std_qt+12).">0),If(e.F".($std_qt+12)."<=r.Score,0,-10),0) as qt  ";
+					    $query.=" From (".$tm4db.".result_".$season." as r inner JOIN ".$tm4db.".".$std."_".$LSeason." as e on (e.I_R='I'".(($age < $min_age)?'and e.Lo_Hi!=99':'')." and ((r.DISTANCE = e.DISTANCE and r.STROKE=e.STROKE)) and (e.Sex='".$sex."') and e.Lo_Age <= ".$age." AND e.Hi_Age >= ".$age."))";
+					    $query.=" inner join ".$tm4db.".meet_".$season." as m on (r.Meet = m.Meet ".(($since ==null)?'':"and m.Start >= '".$since."'").((!$restrictbest)?'':" and m.Type='".$type."'").")";
+					    $query.=" Where r.NT=0 and r.I_R!='R' and r.Course='L'  and r.ATHLETE =".$athlete;
+		
+					    //Short course query
+					    $query.=" union SELECT r.I_R,e.F".$std_qt.",e.S".$std_qt.",e.F".($std_qt+12).",e.S".($std_qt+12).",((e.Lo_Age*100)+e.Hi_Age) as Lo_Hi,e.Sex,e.Stroke,e.Distance,".course_conversion($tm4db,$season)." as SCORE,r.Course,m.MName,m.Start,".course_conversion($tm4db,$season)." as conv,1 as pref,If((e.S".($std_qt+12).">0),If(e.S".($std_qt+12).">=".course_conversion($tm4db,$season).",11,12),11) + If((e.F".($std_qt+12).">0),If(e.F".($std_qt+12)."<=".course_conversion($tm4db,$season).",0,-10),0) as qt  ";
+					    $query.=" From (".$tm4db.".result_".$season." as r inner JOIN ".$tm4db.".".$std."_".$LSeason." as e on (e.I_R='I'".(($age < $min_age)?'and e.Lo_Hi!=99':'')." and ((r.DISTANCE = e.DISTANCE and r.STROKE=e.STROKE)) and (e.Sex='".$sex."') and e.Lo_Age <= ".$age." AND e.Hi_Age >= ".$age."))";
+					    $query.=" inner join ".$tm4db.".meet_".$season." as m on (r.Meet = m.Meet ".(($since ==null)?'':"and m.Start >= '".$since."'").((!$restrictbest)?'':" and m.Type='".$type."'").")";
+					    $query.=" Where r.NT=0 and r.I_R='I' and r.Course='S'  and r.ATHLETE =".$athlete;
+		
+					 }
+		
+				       if($object->Course=='SO')
+					 {
+						 $qtset=" (e.F".$std_qt.">0)  Or (e.S".$std_qt.">0) ";
+					    //Short course only query
+					    $query.=" SELECT r.I_R,e.F".$std_qt.",e.S".$std_qt.",e.F".($std_qt+12).",e.S".($std_qt+12).",((e.Lo_Age*100)+e.Hi_Age) as Lo_Hi,e.Sex,e.Stroke,e.Distance,r.SCORE,r.Course,m.MName,m.Start,r.Score as conv,1 as pref,If((e.S".$std_qt.">0),If(e.S".$std_qt.">=r.Score,11,12),11) + If((e.F".$std_qt.">0),If(e.F".$std_qt."<=r.Score,0,-10),0) as qt ";
+					    $query.=" From (".$tm4db.".result_".$season." as r inner JOIN ".$tm4db.".".$std."_".$LSeason." as e on (e.I_R='I'".(($age < $min_age)?'and e.Lo_Hi!=99':'')." and ((r.DISTANCE = e.DISTANCE and r.STROKE=e.STROKE)) and (e.Sex='".$sex."') and e.Lo_Age <= ".$age." AND e.Hi_Age >= ".$age."))";
+					    $query.=" inner join ".$tm4db.".meet_".$season." as m on (r.Meet = m.Meet ".(($since ==null)?'':"and m.Start >= '".$since."'").((!$restrictbest)?'':" and m.Type='".$type."'").")";
+					    $query.=" Where r.NT=0 and r.I_R!='L' and r.Course='S'  and r.ATHLETE =".$athlete;
+					 }
+		
+				       if($object->Course=='SL')  //Considers Muti course cut meets
+					 {	//Short course query
+						 $qtset=" (e.F".$std_qt.">0) Or (e.F".($std_qt+12).">0) Or (e.S".($std_qt+12).">0) Or (e.S".$std_qt.">0) ";
+						 
+					    $query.=" SELECT r.I_R,e.F".$std_qt.",e.S".$std_qt.",e.F".($std_qt+12).",e.S".($std_qt+12).",((e.Lo_Age*100)+e.Hi_Age) as Lo_Hi,e.Sex,e.Stroke,e.Distance,r.SCORE,r.Course,m.MName,m.Start,r.SCORE as conv,1 as pref,If((e.S".($std_qt+12).">0) Or (e.S".$std_qt.">0),If(e.S".$std_qt.">0,If(e.S".$std_qt.">=r.Score,11,12),13),11) + If((e.F".$std_qt.">0) Or (e.F".($std_qt+12).">0),If((e.F".$std_qt.">0),If(e.F".$std_qt."<=r.Score,0,-10),10),0) as qt ";
+					    $query.=" From (".$tm4db.".result_".$season." as r inner JOIN ".$tm4db.".".$std."_".$LSeason." as e on (e.I_R='I'".(($age < $min_age)?'and e.Lo_Hi!=99':'')." and ((r.DISTANCE = e.DISTANCE and r.STROKE=e.STROKE)) and (e.Sex='".$sex."') and e.Lo_Age <= ".$age." AND e.Hi_Age >= ".$age."))";
+					    $query.=" inner join ".$tm4db.".meet_".$season." as m on (r.Meet = m.Meet ".(($since ==null)?'':"and m.Start >= '".$since."'").((!$restrictbest)?'':" and m.Type='".$type."'").")";
+					    $query.=" Where r.NT=0 and r.I_R!='R' and r.Course='S'  and r.ATHLETE =".$athlete;
+		
+					    //long course query
+					    $query.=" union SELECT r.I_R,e.F".$std_qt.",e.S".$std_qt.",e.F".($std_qt+12).",e.S".($std_qt+12).",((e.Lo_Age*100)+e.Hi_Age) as Lo_Hi,e.Sex,e.Stroke,e.Distance,r.SCORE,r.Course,m.MName,m.Start,".course_conversion($tm4db,$season)." as conv,2 as pref,If((e.S".($std_qt+12).">0) Or (e.S".$std_qt.">0),If(e.S".($std_qt+12).">0,If(e.S".($std_qt+12).">=r.Score,11,12),13),11) + If((e.F".$std_qt.">0) Or (e.F".($std_qt+12).">0),If((e.F".($std_qt+12).">0),If(e.F".($std_qt+12)."<=r.Score,0,-10),10),0) as qt ";
+					    $query.=" From (".$tm4db.".result_".$season." as r inner JOIN ".$tm4db.".".$std."_".$LSeason." as e on (e.I_R='I'".(($age < $min_age)?'and e.Lo_Hi!=99':'')." and ((r.DISTANCE = e.DISTANCE and r.STROKE=e.STROKE)) and (e.Sex='".$sex."') and e.Lo_Age <= ".$age." AND e.Hi_Age >= ".$age."))";
+					    $query.=" inner join ".$tm4db.".meet_".$season." as m on (r.Meet = m.Meet ".(($since ==null)?'':"and m.Start >= '".$since."'").((!$restrictbest)?'':" and m.Type='".$type."'").")";
+					    $query.=" Where r.NT=0 and r.I_R='I' and r.Course='L'  and r.ATHLETE =".$athlete;
+		
+					 }
+		
+				       if($object->Course=='S')  //Covert all times to shrt course then Consider them, note preferance (pref is equal here =1)
+					 {
+						 $qtset=" (e.F".$std_qt.">0)  Or (e.S".$std_qt.">0) ";
+					    //Short course query
+					    $query.=" SELECT r.I_R,e.F".$std_qt.",e.S".$std_qt.",e.F".($std_qt+12).",e.S".($std_qt+12).",((e.Lo_Age*100)+e.Hi_Age) as Lo_Hi,e.Sex,e.Stroke,e.Distance,r.SCORE as SCORE,r.Course,m.MName,m.Start,r.SCORE as conv,1 as pref,If((e.S".$std_qt.">0),If(e.S".$std_qt.">=r.Score,11,12),11) + If((e.F".$std_qt.">0),If(e.F".$std_qt."<=r.Score,0,-10),0) as qt ";
+					    $query.=" From (".$tm4db.".result_".$season." as r inner JOIN ".$tm4db.".".$std."_".$LSeason." as e on (e.I_R='I'".(($age < $min_age)?'and e.Lo_Hi!=99':'')." and ((r.DISTANCE = e.DISTANCE and r.STROKE=e.STROKE)) and (e.Sex='".$sex."') and e.Lo_Age <= ".$age." AND e.Hi_Age >= ".$age."))";
+					    $query.=" inner join ".$tm4db.".meet_".$season." as m on (r.Meet = m.Meet ".(($since ==null)?'':"and m.Start >= '".$since."'").((!$restrictbest)?'':" and m.Type='".$type."'").")";
+					    $query.=" Where r.NT=0 and r.I_R!='R' and r.Course='S'  and r.ATHLETE =".$athlete;
+		
+					    //long course query
+					    $query.=" union SELECT r.I_R,e.F".$std_qt.",e.S".$std_qt.",e.F".($std_qt+12).",e.S".($std_qt+12).",((e.Lo_Age*100)+e.Hi_Age) as Lo_Hi,e.Sex,e.Stroke,e.Distance,".course_conversion($tm4db,$season)." as SCORE,r.Course,m.MName,m.Start,".course_conversion($tm4db,$season)." as conv,1 as pref,If((e.S".$std_qt.">0),If(e.S".$std_qt.">=".course_conversion($tm4db,$season).",11,12),11) + If((e.F".$std_qt.">0),If(e.F".$std_qt."<=".course_conversion($tm4db,$season).",0,-10),0) as qt ";
+					    $query.=" From (".$tm4db.".result_".$season." as r inner JOIN ".$tm4db.".".$std."_".$LSeason." as e on (e.I_R='I'".(($age < $min_age)?'and e.Lo_Hi!=99':'')." and ((r.DISTANCE = e.DISTANCE and r.STROKE=e.STROKE)) and (e.Sex='".$sex."') and e.Lo_Age <= ".$age." AND e.Hi_Age >= ".$age."))";
+					    $query.=" inner join ".$tm4db.".meet_".$season." as m on (r.Meet = m.Meet ".(($since ==null)?'':"and m.Start >= '".$since."'").((!$restrictbest)?'':" and m.Type='".$type."'").")";
+					    $query.=" Where r.NT=0 and r.I_R='I' and r.Course='L'  and r.ATHLETE =".$athlete;
+		
+					 }
+					 
+				       $query.=" ) as t order by Lo_Hi,Stroke,Distance,pref,SCORE, Start desc";
+		
+				       $query.=") as f Group by Lo_Hi,Stroke,Distance,pref";
+		
+				       $query.=" union SELECT null as I_R,e.F".$std_qt.",e.S".$std_qt.",e.F".($std_qt+12).",e.S".($std_qt+12).",((e.Lo_Age*100)+e.Hi_Age) as Lo_Hi,e.Sex,e.Stroke,e.Distance, null as SCORE, null as Course, null as MName, '' as Start, null as conv,13 as pref,IF( ".$qtset." ,33,11) as qt, null as SCORE ";
+				       $query.=" From (".$tm4db.".".$std."_".$LSeason." as e) Where (e.I_R='I'".(($age < $min_age)?'and e.Hi_Age!=99':'')."  and (e.Sex='".$sex."') and e.Lo_Age <= ".$age." AND e.Hi_Age >= ".$age.")";
+		
+				       $query.=" ) as h  order by Lo_Hi,Stroke,Distance,qt,pref,conv";
+		
+				       $query.=" ) as f Group by f.Lo_Hi,f.Stroke,f.Distance order by Stroke,Distance,Lo_Hi,qt,pref,conv, Start desc";
+		
+				       //$output.=$query;
+				       $headers[] = array('data' => t('Dis'), 'width' => '40px');
+				       $headers[] = array('data' => t('Stroke'), 'width' => '60px');
+				       $headers[] = array('data' => t('Age'), 'width' => '80px');
+				       $headers[] = array('data' => t('Time'), 'width' => '80px');
+				       $headers[] = array('data' => t('I/L'), 'width' => '20px');
+				       $headers[] = array('data' => t('Date'), 'width' => '80px');
+				       $headers[] = array('data' => t('Meet'), 'width' => '320px');
+				       // order by m.Start DESC
+				      
+				       $result = db_query($query);
+				       $i=0;
+				       $total = 0;
+				       while ($object = db_fetch_array($result))
+					 {
+						 $timebox = get_time($object['conv']);
+						 
+						 //$link = 'athlete/entries/events/'.arg(3).'/'.$object->Meet;
+						 $rows[] = array('onmouseover'=>"dis_qt(".$i.",".js_null($object['SCORE2']).",".js_null((($object['Course']=='L')?0:1)).",".js_null($object['S'.$std_qt]).",".js_null($object['F'.$std_qt]).",".js_null($object['S'.($std_qt+12)]).",".js_null($object['F'.($std_qt+12)]).",".$multi.")",'data' => array($object['Distance'],Stroke($object['Stroke']),Age($object['Lo_Hi']),array('data'=>$timebox.' <small>'.$object['Course'].'</small>'."<div class='cellrel'><div class='cellinfodis' id='s".$i."'></div></div>",'class'=>(($object['qt']%10==1)?'green':(($object['qt']%10==2)?(($enforce==1)?'red':'yellow'):(($object['qt']%10==3)?'red':''))).(($object['qt']<10)?(($enforce==1)?' min_red':' min_yellow'):(($object->qt>30)?' red ':(($object->qt>20)?' min_red':'')))),$object['I_R'],get_date($object['Start']),$object['MName']));
+						 $i++;
+					 }
+					 
+					
+					 
+				       if (!$rows)
+					 $rows[] = array(array('data' => t('There are no events matching you criteria (Age,Sex)'), 'colspan' => 11));
+		
+		
+		
+					    
+					    $table =  theme_table($headers, $rows,array('onmouseout'=>'hide_dis();'));
+					    $output.=$table;
+					    $output.="</td></tr></table><br><br><br><br>";
+					     
+					      }
+					  else
+					    {
+					       $output.="<p aglin='center'>Sorry this meet Courses is not supoprted: ".$object->Course."</p>";
+					    }
+		       
+?>

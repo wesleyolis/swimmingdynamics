@@ -1,0 +1,6 @@
+; $Id$
+name = Print Fiendly
+description = Add printer friendly version,of each page to the drupal site. 
+version = VERSION
+core = 6.x
+package = "Printing"

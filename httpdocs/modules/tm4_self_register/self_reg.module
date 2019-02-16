@@ -1,0 +1,376 @@
+<?php
+
+function self_reg_perm()
+{
+	return array('host','admin','team','register');
+}
+
+function self_reg_menu($cache)
+{
+	$items=array();
+	if($cache)
+	{
+		
+	}else
+	{
+					 
+		$items [] = array('path'=>'self_register','title'=>'TM4 Online Self Registration',
+		'callback'=>'self_reg_register','access'=>array(user_access('host'),user_access('admin'),user_access('team'),user_access('register')),
+		);
+		
+		$items [] = array('path'=>'admin/build/self_reg','title'=>'TM4 Self Registration',
+		'description'=>'Seting up for form Catagories and fess',
+		'callback'=>'self_reg_build',
+		'access'=>array(user_access('host'),user_access('admin'))
+		);
+		
+		
+		$items [] = array('path'=>'admin/settings/self_reg','title'=>'TM4 Self Registration',
+		'description'=>'Online Self capturing athlete data and payment processing.',
+		'callback'=>'drupal_get_form','callback arguments'=>array('self_reg_host_settings'),
+		'access'=>user_access('host')
+		);
+	}
+	return $items;
+}
+
+function self_reg_athlete_type($province,$redirect=false,$form=false)
+{
+	$tm_cur = variable_get('self_reg_db','');
+	$result = db_query("Select f.group,p.name, c.abbr,c.desc,f.new_fees,f.re_fees From {self_reg_provinces} as p, {self_reg_prov_fees} as f,".$tm_cur.".code as c where c.type=0 and (f.group='*' or f.group=c.abbr) and p.province=f.province and p.lsc='%s' order by c.abbr,f.group desc",$province);
+		
+		if(!$object = db_fetch_object($result))
+		if($redirect)
+		{
+			drupal_set_message('You have made an invalied Province Selection');
+			drupal_goto($redirect);
+			exit();
+		}
+	
+	$labbr=null;
+		do
+		{
+			if(!($labbr== $object->abbr & $object->group=='*'))
+			if(!$form)
+			$rows[]= array($object->abbr,$object->desc,$object->new_fees,$object->re_fees);
+			else
+			$rows[$object->abbr.' '.$object->desc]=array($object->abbr=>$object->abbr.' Fee: '.$object->new_fees.' : '.$object->re_fees);
+			$labbr=$object->abbr;
+		}
+		while($object = db_fetch_object($result));
+	return $rows;
+}
+
+function self_reg_register()
+{
+	
+	if(arg(1)==null)
+	{
+		drupal_set_title('TM4 Online Self registration - Province');
+		
+		$output='Please select your Province.';
+		
+		$head[]=array('data'=>'LSC','width'=>'40px');
+		$head[]=array('data'=>'Name','width'=>'150px');
+		
+		$result = db_query("Select * From {self_reg_provinces} where province in (select province from {self_reg_prov_fees})");
+		
+		while($object = db_fetch_object($result))
+		{
+			$rows[]= array(l($object->lsc,'self_register/'.$object->lsc),$object->name);	
+		}
+		
+		$output.= theme_table($head,$rows,array('id'=>'hyper','class'=>'hyper'),null);
+		return $output;
+	}
+	else
+	if(arg(1)!='form')
+	{
+		$rows = self_reg_athlete_type(arg(1),'self_register');
+		
+		drupal_set_title('TM4 Online Self registration - '.$object->name.' Registration Cost');
+		$output='Please select take note of the following cost for registration as per athlete.<br/>';
+		$output.=l('Click here to continue with Registration','self_register/form/'.arg(1).'');
+		
+		$head[]=array('data'=>'Abbr','width'=>'40px');
+		$head[]=array('data'=>'Group','width'=>'150px');
+		$head[]=array('data'=>'New','width'=>'80px');
+		$head[]=array('data'=>'Renewal','width'=>'80px');
+		
+		$output.= theme_table($head,$rows,array('id'=>'hyper','class'=>'hyper'),null);
+		return $output;
+	}else
+	{
+		drupal_set_title('TM4 Online Self registration Form');
+		return drupal_get_form('self_reg_registration_form');	
+	}
+}
+
+function my_form_submit($form_id, $form_values) {
+	/*
+	$step = $form_values['page-step'];
+	
+  switch ($form_values['page_set']) {
+    case 1:
+      // Process the form data accumulated in the first three steps
+      if ($form_state['values']['name'] == '')
+    form_set_error('name', t('You must select a name for this group of settings.'));
+    
+    			
+			
+      break;
+      
+    case 2:
+      // Process the form data accumulated in steps 4 through 9
+      break;
+    
+  }*/
+}
+
+function theme_self_reg_registration_form($form)
+{
+
+   $output.="<h1>".$form['athlete']['province']['#value']." Province</h1><br/>";
+   
+    return $output.drupal_render($form);
+
+  
+}
+/*
+function copy_form_values(&$array,&$form_mem,$prev=)
+{
+	foreach($array as $key=>$val)
+	if(is_array($val))
+	{
+	$ke
+	copy_form_values($val,$form_mem,;
+	}
+	else
+	if($prev=='')
+	$form_mem[$key]=$val;
+	else
+	$form_mem[$prev][$key]=$val;
+	
+}*/
+
+function self_reg_registration_form($form_values = null)
+{
+	
+	//-1 equals unlimited
+	$pages_buttons_names = array(0=>array('forward_step'=>'Add Athlete'));
+	$pages_depths = array(0=>-1,1=>0);
+	$pages = count($pages_depths);
+	
+	$form = array();
+	$nav =  unserialize($form_values['navigation']);
+	
+	
+	
+	if (!isset($form_values)) {
+	    $step = 0;
+	    $page_set=0;
+	    $curr_depths=array(0=>0);
+	  }
+	  else {
+		  //retrive naggation options
+		$nav=array_search($form_values['op'],$nav);
+		
+		
+		  $step = $form_values['step'];
+		  $page_set = $form_values['page_set'];
+		  $curr_depths =  unserialize($form_values['pages_depths']);
+		  
+		   print "<br>".'start:'.$step.':'.$page_set;
+		   
+		  if ($nav=='forward_step')
+		  {
+		  	if($step<$pages_depths[$page_set]||$pages_depths[$page_set]==-1)
+			{
+				$step++;
+				$curr_depths[$page_set]=$step;
+			}
+			else
+			{
+				$page_set++;
+				$step=0;
+			}
+			
+		  }
+		  else
+		  if ($nav=='forward_page_set')
+		  {
+			  $step=0;
+			  $page_set++;
+			  $curr_depths[$page_set]=0;
+			  
+		  }else
+		  if ($nav=='back')
+		  {
+			  if($step>0)
+			  $step--;
+			  else if($page_set>0)
+			  {
+				  $page_set--;
+				  $step=$curr_depths[$page_set];
+				  print 'depth:'.$step;
+			  }
+		  }else
+		  if($nav=='forward')
+		  {
+			  if($step<$curr_depths[$page_set])
+			 	 $step++;
+			  else{
+				  $page_set++;
+				  $step=0;
+			  }
+		  }
+		  
+		  
+		  //Memorize Preform detialed information.
+	  
+	
+	   }
+	   
+	   
+	
+	   $form['#multistep'] = TRUE;
+	   $form['#redirect'] = FALSE;
+	   
+	    $form['pages_depths'] = array('#type'=>'hidden','#value'=>  serialize($curr_depths));
+	    print "<br>".'end:'.$step.':'.$page_set;
+	    print "<br>";
+	    print_r($curr_depths);
+	    
+	   
+	   
+	  $form['step'] = array('#type'=>'hidden','#value' => $step);
+	  $form['page_set'] = array('#type'=>'hidden','#value' => $page_set);
+
+	  
+	//navigation menu  
+	
+	if($step!=0 || $page_set!=0)   
+	$form_nav['back'] = array('#type'=> 'button','#value'=>t('Back'),'#weight'=>-1);
+
+	if($page_set<(count($curr_depths)-1) || ($step<$curr_depths[$page_set]))
+	{
+	$form_nav['forward'] = array('#type'=> 'button','#value'=>t('Forward'),'#weight'=>8);
+	if($pages_depths[$page_set]==-1)
+	$form['delete'] = array('#type'=> 'button','#value'=>t('Delete Athlete'),'#weight'=>3);
+	}
+	else
+	if($pages_depths[$page_set]==-1)
+	{
+		$form_nav['forward_page_set'] = array('#type'=> 'button','#value'=>t('Continue'),'#weight'=>4);
+		if($step!=0 && $step==$curr_depths[$page_set])
+		$form_nav['forward_skip'] = array('#type'=> 'button','#value'=>t('Skip'),'#weight'=>1);
+	}
+	
+	if($page_set<$pages)
+	$form_nav['forward_step'] = array('#type'=> 'button','#value'=>t(($pages_depths[$page_set]==-1?$pages_buttons_names[$page_set]['forward_step']:'Continue')),'#weight'=>0);
+	
+	
+	
+	$form['n']=$form_nav;
+	
+	//out navigation keys
+	foreach($form_nav as $key=>$val)
+	$nav_keys[$key]= $form_nav[$key]['#value'];
+	$form['navigation'] = array('#type'=>'hidden','#value'=> serialize($nav_keys));
+	
+	if($page_set>=$pages)
+	$form['submit'] = array('#type' => 'submit','#value' => t('Submit'));
+	
+	
+	
+	
+	
+	  $tm_cur = variable_get('self_reg_db','');
+	  //check if at end.
+	  if($page_set<$pages)
+	  switch($page_set)
+	  {
+		  case 0:
+		  {
+		
+			$form['athlete'][$step.'province']=array('#type'=>'hidden','#value'=>arg(2),'#required'=>true);
+			$form['athlete']['names'][$step.'last']=array('#type'=>'textfield','#size'=>25,'#max_length'=>20,'#default_value'=>'','#title'=>'Last','#required'=>false);
+			$form['athlete']['names'][$step.'first']=array('#type'=>'textfield','#size'=>25,'#max_length'=>20,'#default_value'=>'','#title'=>'First','#required'=>false);
+			$form['athlete']['names'][$step.'middle']=array('#type'=>'textfield','#size'=>25,'#max_length'=>20,'#default_value'=>'','#title'=>'Middle','#required'=>false);
+			$form['athlete']['names'][$step.'initial']=array('#type'=>'textfield','#size'=>2,'#max_length'=>1,'#default_value'=>'','#title'=>'Initial','#required'=>false);
+			$form['athlete']['names'][$step.'perf']=array('#type'=>'textfield','#size'=>25,'#max_length'=>20,'#default_value'=>'','#title'=>'Prefered');
+			
+			$form['athlete'][$step.'sex'] = array('#type' =>'select','#options' => array(''=>'Select','M'=>'Male','F'=>'Female'),'#default_value'=>'','#title'=>'Gender','#required'=>false);
+			$form['athlete'][$step.'birth']=array('#type'=>'date','#size'=>10,'#max_length'=>8,'#default_value'=>'','#title'=>'Date-of-Birth','#required'=>false);
+			$form['athlete'][$step.'inactive'] = array('#type' =>'select','#options' => array(0=>'Active','1'=>'Inactive'),'#default_value'=>'0','#title'=>'Status','#required'=>false);
+			$form['athlete'][$step.'citizen']=array('#type'=>'textfield','#size'=>5,'#max_length'=>3,'#default_value'=>'RSA','#title'=>'Citizen of','#required'=>false);
+			
+			$form['athlete']['names'][$step.'cell']=array('#type'=>'textfield','#size'=>25,'#max_length'=>20,'#default_value'=>'','#title'=>'Athlete Cell','#required'=>false);
+			$form['athlete']['names'][$step.'email']=array('#type'=>'textfield','#size'=>25,'#max_length'=>20,'#default_value'=>'','#title'=>'Athlete E-mail','#required'=>false);
+			
+			
+			$group['']='Select';
+			$group = self_reg_athlete_type(arg(2),'self_register',true);
+			$form['athlete'][$step.'group'] = array('#type' =>'select','#options' =>$group,'#default_value'=>'','#title'=>'Athlete Type','#required'=>false,
+			'#description'=>'Pelase note this colom is related to the cost involved in registering an athlete.');
+			
+			//Ethnic Group
+			$result = db_query("Select c.abbr,c.desc From ".$tm_cur.".code as c where c.type=1");
+			$subgp['']='Select';
+			while($object=db_fetch_object($result))
+			$subgp[$object->abbr]= $object->abbr.' '.$object->desc;
+			$form['athlete']['subgr'] = array('#type' =>'select','#options' =>$subgp,'#default_value'=>'','#title'=>'Ethnic','#required'=>false);
+			
+			//Team Selection
+			$result = db_query("Select t.Team,t.TCode,t.TName From ".$tm_cur.".team as t where t.LSC='%s'",$form['athlete'][$step.'province']['#value']);
+			$team['']='Select';
+			while($object=db_fetch_object($result))
+			$team[$object->Team]= $object->TCode.' - '.$object->TName;
+			$form['athlete']['team'] = array('#type' =>'select','#options' =>$team,'#default_value'=>'','#title'=>'Team','#required'=>false);
+		  }
+		  break;
+		  case 1:
+		  {
+		
+		
+		// Add a back button
+		
+		  }
+	  }
+	  else
+	  {
+	//Revison summary of all information be for final submition 	  
+	  }
+	  
+	
+	
+	 
+	return $form;
+}
+
+
+function self_reg_build()
+{
+	return 'Build';
+}
+
+
+function self_reg_host_settings()
+{
+	$form['self_reg_db']=array('#type'=>'textfield','#size'=>30,'#max_length'=>40,
+				'#default_value'=>variable_get('self_reg_db',''),'#title'=>'Current Database',
+				'#description'=>'TM4 database to retrive and save registations in.');
+	$form['self_reg_prev_db']=array('#type'=>'textfield','#size'=>30,'#max_length'=>40,
+				'#default_value'=>variable_get('self_reg_prev_db',''),'#title'=>'Old Database',
+				'#description'=>'TM4 database retive old registration from.');
+	return system_settings_form($form);
+}
+
+
+
+function self_reg_install()
+{
+	
+}
+
+?>

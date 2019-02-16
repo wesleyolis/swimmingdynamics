@@ -1,0 +1,19 @@
+<?php
+// $Id: addtofavorites.install,v 1.1.2.1 2007/05/19 23:41:00 thierrygd Exp $
+
+// Copyright 2007 Thierry GUEGAN http://www.arvoriad.com 
+
+
+function addtofavorites_uninstall() {
+ 
+  variable_del('addtofavorites_block_title');
+  variable_del('addtofavorites_homepage'); 
+  variable_del('addtofavorites_homepage_OK'); 
+  variable_del('addtofavorites_icons');    
+  variable_del('addtofavorites_links');    
+  variable_del('addtofavorites_page');    
+  variable_del('addtofavorites_page_OK'); 
+  variable_del('addtofavorites_site'); 
+  variable_del('addtofavorites_site_icon_OK'); 
+  variable_del('addtofavorites_site_OK');  
+}

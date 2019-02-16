@@ -1,0 +1,104 @@
+<?php
+
+require('../../main_include.php'); 
+
+
+$query = "select m.MName, e.MtEv, e.MtEvX, e.Lo_Hi, e.Sex as ESex, e.Distance, e.Stroke, e.Course from ".$db_name."mtevent e inner join ".$db_name."meet m on (e.Meet=m.Meet) WHERE e.Meet=".inj_int($_GET['m'])." ";
+		 
+		switch($_GET['gen'])
+		    {
+		     case 'F': $Gen= "Female";
+		       break;
+		     case 'M': $Gen="Male";
+		       break;
+		     case 'X': $Gen="Mixed";
+		       break;
+		    }
+
+		  $result = db_query($query);
+		  if(!mysql_error())
+		  $object = mysql_fetch_object($result);
+		  drupal_set_title($object->MName.' Meet - '.$Gen.' '.Age($_GET['age']).' Indi Points Results Ranking'.' '.$_GET['ss'].'-'.($_GET['ss']+1).' ');
+		  
+		   setseasons_breadcrumb(array(l2('Meets','m='.$_GET['m'],'index.php'),l2('Events','&m='.$_GET['m'].'&age=All&gen=All','events.php')));
+		  
+		 $menu_option = 'points';
+		 require('meets_menu.php');
+		   
+		  $output.= "<div class='title' align=\'center\'>".$Gen.' '.Age($_GET['age'])." Individual Points Rankings</div>";
+
+		  $Where = ' ';
+		  switch($_GET['gen'])
+		    {
+		     case 'F': $Where.= " and a.Sex='F'";
+		       break;
+		     case 'M': $Where.= " and a.Sex='M'";
+		       break;
+		    }
+		    
+		  if($_GET['age'] != NULL)
+		    {
+		       $Where.= " and r.Age >=".floor(inj_int($_GET['age'])/100)." and r.Age <=".(inj_int($_GET['age'])%100);
+		    }
+
+		  //Call render functon
+		  $Where = "WHERE r.Meet=".inj_int($_GET['m']).' '.$Where;
+		  
+   $headers[] = array('data' => t('#'), 'style' => 'width:1em;');
+   $headers[] = array('data' => t('Score'), 'style' => 'width:2.5em;');
+   $headers[] = array('data' => t('Athlete Name'), 'style' => 'width:20em;');
+   $headers[] = array('data' => t('M/F'), 'style' => 'width:1.5em;');
+   $headers[] = array('data' => t('Age'), 'style' => 'width:2em;');
+   $headers[] = array('data' => t('Team'), 'style' => 'width:4em;');
+
+   $query = "select a.Athlete, a.Last, a.First, a.Sex,r.age, (sum(r.POINTS)/10) as Sum_Points, t.TCode, t.LSC from ";
+   $query.=" ( ".$db_name."result as r left join ".$db_name."athlete as a on (r.ATHLETE= a.Athlete)) left join ".$db_name."team as t on (r.TEAM=t.Team)";
+   $query.=" ".$Where." and r.I_R='I' and a.Athlete>0 GROUP BY r.ATHLETE having Sum(r.POINTS)>0 order by Sum_Points DESC,a.last";
+
+   $result = db_query($query);
+   //$output.=$query;
+   $output.= '<table><tr><td>';
+
+   $pos = 0;
+   $pos2 = -1;
+   $point=NULL;
+   //Grouping
+   $Age=NULL;
+   $First = false;
+   if(!mysql_error())
+   while ($object = mysql_fetch_object($result))
+     {
+	if($Age != $object->Lo_Hi)
+	  {
+	     $Age = $object->Lo_Hi;
+	     $pos = 0;
+	     //Heading for Grouping
+	     if($rows==NULL && $First)
+	       $rows[] = array(array('data' => t('There are no results for this Age Group'), 'colspan' => 6));
+	     $First=true;
+
+	     if($rows !=NULL)
+	       $output.= theme_table($headers, $rows,null,null).'<br>';
+	     $output.= "<br><p class='title' align=\'center\'><b>".Age($object->Lo_Hi).'</b></p><br>';
+	     $rows = NULL;
+	  }
+
+	if($point != $object->Sum_Points)
+	  {
+	     $point = $object->Sum_Points;
+	     $pos++;
+	  }
+	$link='athlete/'.'/top_times/'.$object->Athlete;
+	$rows[] = array((($pos ==$pos2)?'-':$pos),Round($object->Sum_Points,1),( ($object->Last==NULL)?'Athlete not found':l(t($object->Last.", ".$object->First), $link)), $object->Sex, $object->age, $object->TCode."-".$object->LSC);
+	if($pos != pos2)
+	  $pos2 = $pos;
+     }
+   if (!$rows)
+     {
+	$rows[] = array(array('data' => t('There are no results for this Age Group, click '), 'colspan' => 6));
+     }
+   $output.= theme_table($headers, $rows,null,null);
+   $output.= '</td></tr></table>';
+   
+   render_page();
+?>

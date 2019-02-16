@@ -1,0 +1,5 @@
+; $Id$
+name = Advert
+description = Advertsing on a new level, quality with quantity.
+Version = beta 0.1
+package = "Wip - Advertising"

@@ -1,0 +1,183 @@
+<?php
+//Compatiblity functions for drupal
+$breadcrumb = Array();
+function drupal_set_title($str)
+{
+	global $page_title, $site_title,$config;
+	$page_title = ucfirst($config['db_ident']).' '.$str.' - '.$site_title;
+	
+	
+}
+
+function ll($t,$url)
+{
+	return '<a href=\''.$url.'\'>'.$t.'</a>';	
+}
+
+function l($t,$param=null,$url=null)
+{
+	global $config;
+	return '<a href=\''.$url.'?db='.$config['db_ident'].'&ss='.$config['seas_curr'].(($param!=null)?'&q='.$param:'').'\'>'.$t.'</a>';	
+}
+
+function setseasons_breadcrumb($crumb)
+{
+	
+	   $breadcrumb[] = $crumb;
+}
+function t($str)
+{
+	return $str;	
+}
+
+function drupal_attributes($attributes = array()) {
+  if (is_array($attributes)) {
+    $t = '';
+    foreach ($attributes as $key => $value) {
+      $t .= " $key=".'"'. $value .'"';
+    }
+    return $t;
+  }
+}
+
+function _theme_table_cell($cell, $header = FALSE) {
+  $attributes = '';
+
+  if (is_array($cell)) {
+    $data = isset($cell['data']) ? $cell['data'] : '';
+    $header |= isset($cell['header']);
+    unset($cell['data']);
+    unset($cell['header']);
+    $attributes = drupal_attributes($cell);
+  }
+  else {
+    $data = $cell;
+  }
+
+  if ($header) {
+    $output = "<th$attributes>$data</th>";
+  }
+  else {
+    $output = "<td$attributes>$data</td>";
+  }
+
+  return $output;
+}
+
+function theme_table($header, $rows, $attributes = array(), $caption = NULL) {
+
+  $output = '<table'. drupal_attributes($attributes) .">\n";
+  if (isset($caption)) {
+    $output .= '<caption>'. $caption ."</caption>\n";
+  }
+
+  // Format the table header:
+  if (count($header)) {
+    $ts = array();//tablesort_init($header);
+    // HTML requires that the thead tag has tr tags in it followed by tbody
+    // tags. Using ternary operator to check and see if we have any rows.
+    $output .= (count($rows) ? ' <thead><tr>' : ' <tr>');
+    foreach ($header as $cell) {
+  //    $cell = tablesort_header($cell, $header, $ts);
+      $output .= _theme_table_cell($cell, TRUE);
+    }
+    // Using ternary operator to close the tags based on whether or not there are rows
+    $output .= (count($rows) ? " </tr></thead>\n" : "</tr>\n");
+  }
+  else {
+    $ts = array();
+  }
+
+  // Format the table rows:
+  if (count($rows)) {
+    $output .= "<tbody>\n";
+    $flip = array('even' => 'odd', 'odd' => 'even');
+    $class = 'even';
+    foreach ($rows as $number => $row) {
+      $attributes = array();
+
+      // Check if we're dealing with a simple or complex row
+      if (isset($row['data'])) {
+        foreach ($row as $key => $value) {
+          if ($key == 'data') {
+            $cells = $value;
+          }
+          else {
+            $attributes[$key] = $value;
+          }
+        }
+      }
+      else {
+        $cells = $row;
+      }
+      if (count($cells)) {
+        // Add odd/even class
+        $class = $flip[$class];
+        if (isset($attributes['class'])) {
+          $attributes['class'] .= ' '. $class;
+        }
+        else {
+          $attributes['class'] = $class;
+        }
+
+        // Build row
+        $output .= ' <tr'. drupal_attributes($attributes) .'>';
+        $i = 0;
+        foreach ($cells as $cell) {
+         // $cell = tablesort_cell($cell, $header, $ts, $i++);
+          $output .= _theme_table_cell($cell);
+        }
+        $output .= " </tr>\n";
+      }
+    }
+    $output .= "</tbody>\n";
+  }
+
+  $output .= "</table>\n";
+  return $output;
+}
+
+/*
+function theme_table($headers,$rows,$prop)
+{
+	echo 'theme Table';
+	$output='<table>';
+	$output.='<thead>';
+	foreach($headers as $header)
+	$output.=process_tags('tr',$header,TRUE);
+	
+	$output.='</thead><tbody>';
+	foreach($rows as $row)
+	{
+		$output.= process_tags('tr',$row,FALSE);
+		$output.= process_tags('td',$row,TRUE);
+		$output.='</'.$rtag.'>';
+	}
+	$output.='</tbody></table>';
+	return $output;
+	
+}
+
+function process_tags($pre,$tags,$suff)
+{
+	$output='<'.$pre;
+	foreach($tags as $tag=>$value)
+	{
+		echo $tag;
+		if(is_array($tag))
+		{
+			echo 'error tag';
+			$output.='error tag';
+		}
+		else
+		{
+			if($tag!='data')
+			$output.=' '.$tag.'=\''.$value.'\'';
+		}
+	}
+	$output.='>'.$tags['data'];
+		if($suff==TRUE)
+		$output.='</'.$pre.'>';
+		return $output;
+}*/
+?>

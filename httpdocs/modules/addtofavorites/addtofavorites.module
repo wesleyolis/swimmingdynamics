@@ -1,0 +1,187 @@
+<?php
+// $Id: addtofavorites.module,v 1.3.4.6 2007/05/06 17:29:10 thierrygd Exp $
+
+// Copyright 2007 Thierry GUEGAN http://www.arvoriad.com 
+
+/**
+ * @file
+ * This module create a block for helping users to add the website to their 
+ * browser's bookmarks.
+ */
+
+function addtofavorites_menu($may_cache) {
+  $items = array();
+
+  if ($may_cache) {
+    $items[] = array(
+      'path' => 'admin/settings/addtofavorites',
+      'title' => t('Add to favorites module'),
+      'description' => t('Add to favorites module configuration.'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('addtofavorites_admin_settings'),
+      'access' => user_access('administer site configuration'),
+      'type' => MENU_NORMAL_ITEM,);
+  }
+  return $items;
+}
+
+function addtofavorites_admin_settings() {
+  $form = array();
+
+  $form['addtofavorites_config'] = array(
+    '#type' => 'fieldset',
+	'#title' => 'Addtofavorites Block Settings',
+  );
+  $form['addtofavorites_config']['addtofavorites_block_title'] = array(
+     '#type' => 'textfield',
+     '#title' => t('Block Title'),
+          '#default_value' => variable_get('addtofavorites_block_title', t("Add the website to your browser's favorites")),
+     '#size' => 70,
+     '#maxlength' => 128,
+     '#description' => t('This will be the title for the addfavorites block.'),
+  );
+  $form['addtofavorites_config']['addtofavorites_site_OK'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable site bookmarking'),
+    '#default_value' => variable_get('addtofavorites_site_OK', 1),
+  );  
+  $form['addtofavorites_config']['addtofavorites_page_OK'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable page bookmarking'),
+    '#default_value' => variable_get('addtofavorites_page_OK', 1),
+  ); 
+  $form['addtofavorites_config']['addtofavorites_homepage_OK'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Enable making this website as homepage'),
+      '#default_value' => variable_get('addtofavorites_homepage_OK', 1),
+  );      
+  $form['addtofavorites_config_links'] = array(
+    '#type' => 'fieldset',
+	'#title' => 'Addtofavorites Links Block Settings',
+  );  
+  $form['addtofavorites_config_links']['addtofavorites_links'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable links'),
+    '#default_value' => variable_get('addtofavorites_links', 1),
+  );  
+  $form['addtofavorites_config_links']['addtofavorites_site'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Label for site bookmark link and icon alternate text'),
+    '#size' => 20,
+    '#maxlength' => 255,
+    '#default_value' => variable_get('addtofavorites_site', t('Bookmark this site')),
+  );
+  $form['addtofavorites_config_links']['addtofavorites_page'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Label for current page bookmark link and icon alternate text'),
+    '#size' => 20,
+    '#maxlength' => 255,
+    '#default_value' => variable_get('addtofavorites_page', t('Bookmark this page'))
+  );  
+  $form['addtofavorites_config_links']['addtofavorites_homepage'] = array(
+    '#type' => 'textfield',
+    '#title' => t("Label for current 'make this website as your homepage' link and icon alternate text"),
+    '#size' => 20,
+    '#maxlength' => 255,
+    '#default_value' => variable_get('addtofavorites_homepage', t('Make Us your homepage'))
+  );    
+  $form['addtofavorites_config_icons'] = array(
+    '#type' => 'fieldset',
+	'#title' => 'Addtofavorites Icons Block Settings',
+  );    
+  $form['addtofavorites_config_icons']['addtofavorites_icons'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Enable icons'),
+        '#default_value' => variable_get('addtofavorites_icons', 1),
+  );     
+
+  return system_settings_form($form);
+}
+
+function addtofavorites_block($op = 'list', $delta = 0, $edit = array()) {
+  // The $op parameter determines what piece of information is being requested.
+  if ($op == 'list') {
+    // If $op is "list", we just need to return a list of block descriptions. This
+    // is used to provide a list of possible blocks to the administrator.
+    $blocks[0]['info'] = t("Addtofavorites : Help users to add this website to their browser's (IE, Mozilla, ...) bookmarks");
+    return $blocks;
+  }
+  else if ($op == 'save' && $delta == 0) {
+      variable_set('addtofavorites_block_title', $edit['addtofavorites_block_title']);
+  }
+  else if ($op == 'view') {
+      switch ($delta) {
+      case 0:
+      $block = array();
+    // If $op is "view", then we need to generate the block for display purposes.
+    // The $delta parameter tells us which block is being requested.
+    // The subject is displayed at the top of the block. Note that it should
+    // be passed through t() for translation.
+    $block['subject'] = variable_get('addtofavorites_block_title', t("Add the website to your browser's favorites"));
+    // The content of the block is typically generated by calling a custom
+    // function.
+    $sitename = variable_get('site_name', 'drupal');
+    $pagetitle = strip_tags(drupal_get_title());
+    $pagetitle = $pagetitle ? $pagetitle . ' | ' . $sitename : $sitename;
+    $siteurl = url('', null, null, true);  
+    $display_links = variable_get('addtofavorites_links',1); //add the links or not 
+    $display_site_OK = variable_get('addtofavorites_site_OK', 1); //bookmark the site or not 
+    $display_text_site = variable_get('addtofavorites_site', t("Bookmark this site"));
+    $display_page_OK = variable_get('addtofavorites_page_OK', 1); //bookmark the page or not
+    $display_text_page = variable_get('addtofavorites_page', t("Bookmark this page"));
+    $display_icons = variable_get('addtofavorites_icons',1); //add the icons or not 
+    $display_icon_site = base_path() . drupal_get_path('module', 'addtofavorites') ."/images/bookmark_site.gif"; 
+    $display_icon_page = base_path() . drupal_get_path('module', 'addtofavorites') ."/images/bookmark_page.gif";
+    $display_homepage_OK = variable_get('addtofavorites_homepage_OK', 1); //add the site to the browser's homepage
+    $display_text_homepage = variable_get('addtofavorites_homepage', t("Make Us your homepage"));
+    $display_icon_homepage = base_path() . drupal_get_path('module', 'addtofavorites') ."/images/set_homepage.gif";
+    
+    
+    $path = drupal_get_path('module', 'addtofavorites');
+    
+    drupal_add_js($path . '/addtofavorites.js');
+    $links = "";
+    
+    if ($display_site_OK) { 
+            $links .= "<a href=\"#\" onclick=\"javascript:addtofavorites";
+	    $links .= "('" . $siteurl . "','" . $sitename . "')\">";
+            if ($display_icons) { 
+	    	$links .= "<img src=\"" . $display_icon_site . "\"";
+	    	$links .= " alt=\"" . $display_text_site . "\" style=\"vertical-align:middle;\" />";
+	    }
+	    if ($display_links) { 
+	    	$links .= $display_text_site;
+	    	$links .= "<br />\n";  //if we don't display links then align horizontally the icons 
+	    }	    
+	    $links .= "</a>";
+    }
+    if ($display_page_OK) { 
+	    $links .= "<a href=\"#\" onclick=\"javascript:addtofavorites";
+	    $links .= "(top.location.href, '" . $pagetitle . "')\">"; 
+            if ($display_icons) { 
+	    	$links .= "<img src=\"" . $display_icon_page . "\"";
+	    	$links .= " alt=\"" . $display_text_page . "\" style=\"vertical-align:middle;\" />";
+	    }
+	    if ($display_links) { 
+	    	$links .= $display_text_page;
+	    	$links .= "<br />\n";  //if we don't display links then align horizontally the icons 
+	    }
+	    $links .= "</a>";
+    }
+    if ($display_homepage_OK) {     
+    	    $links .= "<a href=\"#\" ";
+    	    $links .= "onClick=\"this.style.behavior='url(#default#homepage)';this.setHomePage('" . $siteurl . "')\">"; 
+                if ($display_icons) { 
+    	    	$links .= "<img src=\"" . $display_icon_homepage . "\"";
+    	    	$links .= " alt=\"" . $display_text_homepage . "\" style=\"vertical-align:middle;\" />";
+    	    }
+    	    if ($display_links) { 
+    	    	$links .= $display_text_homepage;
+    	    }
+    	    $links .= "</a>";
+    }
+    $block['content'] = $links;
+    }
+    return $block;
+  }
+}

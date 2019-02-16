@@ -1,0 +1,5 @@
+; $Id$
+name = Print Fiendly
+description = Add printer friendly version,of each page to the drupal site. 
+Version = beta 1
+package = ""

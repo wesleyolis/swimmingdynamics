@@ -1,0 +1,21 @@
+<?php
+
+
+
+	$output.="<div class='tabs'><ul class='tabs primary'>";
+	$output.="<li ".($menu_option=='info'?"class='active'":'').">".l2('Info','m='.$_GET['m'],'meets_info.php')."</li>";
+	if($display_link==0)
+	{
+		$output.="<li ".($menu_option=='events'?"class='active'":'').">".l2('Events','m='.$_GET['m'].'&age=All&gen=All','events.php')."</li>";
+		$output.="<li ".($menu_option=='points'?"class='active'":'').">".l2('Individual Points','m='.$_GET['m'],'points.php')."</li>";
+		$output.="<li ".($menu_option=='team'?"class='active'":'').">".l2('Team Points','m='.$_GET['m'],'team_points_gen.php')."</li>";
+		$output.="<li ".($menu_option=='fina'?"class='active'":'').">".l2('Fina Points','m='.$_GET['m'],'meets_fina_age.php')."</li>";
+		//$output.="<li ".($menu_option=='jspowered'?"class='active'":'').">".l2('JS Powered Results, Reporting','m='.$_GET['m'],'js_power_results_v2/index.php')."</li>";
+	}
+	else
+	{
+		$output.=" <li ".($menu_option=='event'?"class='active'":'').">".l2('Events','m='.$_GET['m'].'&age=All&gen=All','events_info.php')."</li>";
+	}
+	$output.="</ul></div>";
+	
+	?>

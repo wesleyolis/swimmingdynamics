@@ -1,0 +1,117 @@
+
+table.entries .red, tr.odd .red,tr.even .red {
+  background-color:#FF9999;
+}
+table.entries .green, tr.odd .green, tr.even .green{
+background-color: #CCFF99;
+}
+table.entries .yellow, tr.odd .yellow, tr.even .yellow{
+background-color: #FFFF99;
+}
+
+table.entries.yellow.min_yellow,td.red.min_yellow,td.green.min_yellow,td.min_yellow{
+border:2px solid #FFCC66;
+}
+
+
+table.entries.yellow.min_red,td.red.min_red,td.green.min_red,td.min_red{
+border:2px solid #CC0000;
+}
+
+table.entries td.white{
+	BACKGROUND-COLOR: #ffffff;
+}
+
+
+tr.odd.highlight,tr.even.highlight, p.highlight
+{background-color: #B4D9EB;  }
+
+table.hyper tr.odd.hover td,table.hyper tr.even.hover td
+{background-color: #BFDDEE }
+
+table.hyper tr.odd.hover td.active,table.hyper tr.even.hover td.active
+{background-color: #ABD3E9 }
+
+tr.odd.red td
+{background-color: #F0FFBB }
+ tr.even.red td
+{background-color: #ECFFAA }
+tr.odd.green td
+{background-color: #CAFFCA }
+ tr.even.green td
+{background-color: #B3FFB3 }
+
+tr.odd.red td.active
+{background-color: #F0EFBB }
+ tr.even.red td.active
+{background-color: #ECEFAA }
+tr.odd.green td.active
+{background-color: #CAEFCA }
+ tr.even.green td.active
+{background-color: #B3EFB3 }
+
+
+div .record{
+width:350px;
+}
+
+
+div.sidebar .record{
+width:210px;
+}
+
+div.record{
+border-bottom:1px solid #9BBCFF;
+height:1%;
+font-size: 8pt;
+padding:0px 0px 0px 0px;
+margin:0px 0px 0px 0px;
+}
+div.record .left{
+margin:0px 0px 0px 0px;
+width:65px;
+height:50px;
+padding:0px 0px 0px 4px;
+float:left;
+text-align:left;
+font-size: 10pt;
+}
+div.record .right{
+text-align:left;
+
+padding:0px 0px 0px 0px
+margin:0px 0px 0px 0px;
+}
+
+
+#perfanal-events-filters-form{
+height:20px;
+}
+.cellrel 
+{ 
+position: relative; 
+width: 100%; 
+height: 100%; 
+}
+
+.cellinfodis
+{ 
+z-index: 5; 
+position: absolute; 
+top: -7px; 
+left:-5px;
+}
+
+div.graphsback{
+filter:alpha(opacity=30); -moz-opacity: 0.30; opacity: 0.30;position: absolute; left: 76px; top: 10px;height:150px;
+
+}
+
+test.tr.odd .td,test.tr.even .td {
+BACKGROUND-COLOR: #f54fff;
+border:2px solid #CC0000;
+}
+
+.total{
+border-top:1px solid #000000; border-bottom:3px double #000000; 
+}

@@ -1,0 +1,54 @@
+.activeedit-button {
+  opacity: 0.5;
+  filter: alpha(opacity=50);
+  cursor: pointer;
+  cursor: hand;
+}
+
+.activeedit-opaque {
+  opacity: 1;
+  filter: alpha(opacity=100);
+}
+
+#activeedit-dummy {
+  display: none;
+}
+
+#activeedit-window {
+  background-color: #FFFFE0;
+  left: 10px;
+  top: 10px;
+  display: none;
+  visibility: hidden;
+  position: absolute;
+  z-index: 100;
+  padding: 5px;
+  font-size: 1em;
+}
+
+#activeedit-window.inplace input.form-submit {
+  visibility: hidden;
+}
+
+.activeedit-id {
+  display: none;
+}
+
+html.js fieldset.activeedit-collapsible legend a {
+  padding-left: 15px;
+  background: url(menu-expanded.png) 5px 75% no-repeat;
+}
+
+html.js fieldset.collapsed legend a {
+  background-image: url(menu-collapsed.png);
+  background-position: 5px 50%;
+}
+/* Note: IE-only fix due to '* html' (breaks Konqueror otherwise). */
+* html.js fieldset.collapsed legend,
+* html.js fieldset.collapsed legend *,
+* html.js fieldset.collapsed table * {
+  display: inline;
+}
+html.js fieldset.activeedit-collapsible legend a {
+  display: block;
+}

@@ -1,0 +1,20 @@
+li.activemenu-processed {
+  cursor: pointer;
+  cursor: hand;
+}
+
+li.activemenu-processed ul {
+  cursor: default;
+}
+
+li.activemenu-processed.expanded {
+  background: transparent url(../minus.png) no-repeat 0px .35em;
+}
+
+li.activemenu-processed.collapsed {
+  background: transparent url(../plus.png) no-repeat 0px .35em;
+}
+
+li.collapsed ul {
+  display: none;
+}

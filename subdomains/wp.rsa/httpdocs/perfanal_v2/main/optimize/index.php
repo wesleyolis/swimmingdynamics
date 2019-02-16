@@ -1,0 +1,39 @@
+<?php
+	header("Cache-Control: max-age=-1, no-store"); 
+	require('../../main_config.php');
+	require('../../main_functions.php');
+	require('../../main_durpal_functions.php');
+	require('../../render_page.php');
+	
+?>
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Optermization Selection of DB</title>
+</head>
+<body>
+<?php
+	
+	foreach($sites as $domain_reg=>$data)
+	{
+		echo 'Site: '.$domain_reg.'<br/>';
+		 foreach($data as $url_reg=>$conf)
+		 {
+			echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;>> '.$url_reg.'<br/>';
+		 	foreach($conf['seas'] as $seas_reg=>$s)
+				echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - <a href=\'version.php?db='.$url_reg.'&ss='.$seas_reg.'\'>'.$seas_reg.'</a><br/>';
+		 }
+	}
+			
+		 
+	 
+
+ 
+	
+	
+
+?>
+</body>
+
+</html>

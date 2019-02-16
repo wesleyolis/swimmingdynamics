@@ -1,0 +1,89 @@
+<?php
+
+$Sd = $config['ranking_dd'];
+$Sm = $config['ranking_mm'];
+
+$cur = getdate();
+   if(($cur['mday'] < $Sd & $cur['mon'] <= $Sm ) || $cur['mon'] < $Sm)
+     {//beging year
+	if($_GET['ss'] < ($cur['year']-1))
+	  {
+	     //archive date
+	     $rank['date'] = ($_GET['ss'] +1).'-'.$Sm.'-'.$Sd;
+	     $rank['type'] = 'archive';
+	  }
+	else
+	  {
+		  $rank['type'] = 'current';
+		  if($ranking_manual_update == 'manual')
+		  {
+			  $result = db_query("SELECT SQL_CACHE CURDATE() as dt");
+			  if(!mysql_error())
+			  $object = mysql_fetch_object($result);
+			  $rank['date'] = $object->dt;
+		  }
+		  else
+		  {
+		     $update = $config['ranking_update'];
+		     $period = $config['perfanal_ranking_period'];
+		     
+		     if($update=='W')
+		       {
+			  $result = db_query("SELECT SQL_CACHE SUBDATE(CURDATE(),((WEEK(CURDATE(),1)%".$period.")*7)+ DAYOFWEEK(CURDATE())-1+IF(DAYOFWEEK(CURDATE())=1,7,0)) as dt ");
+			  if(!mysql_error())
+			  $object = mysql_fetch_object($result);
+			  $rank['date'] = $object->dt;
+		       }
+		     else
+		       {
+			  $result = db_query("SELECT SQL_CACHE LAST_DAY(SUBDATE(CURDATE(),INTERVAL 1 MONTH)) as dt");
+			  if(!mysql_error())
+			  $object = mysql_fetch_object($result);
+			  $rank['date'] = $object->dt;
+		       }
+		  }
+	  }
+     }
+   else
+     {//end year
+	if($_GET['ss'] < ($cur['year']))
+	  {
+	     //archive date
+	     $rank['date'] = ($_GET['ss']+1).'-'.$Sm.'-'.$Sd;
+	     $rank['type'] = 'archive';
+	  }
+	else
+	  {
+	     //current date.
+	      $rank['type'] = 'current';
+		  if($ranking_manual_update == 'manual')
+		  {
+			  $result = db_query("SELECT SQL_CACHE CURDATE() as dt");
+			  if(!mysql_error())
+			  $object = mysql_fetch_object($result);
+			  $rank['date'] = $object->dt;
+		  }
+		  else
+		  {
+		     $update = $config['ranking_update'];
+		     $period = $config['perfanal_ranking_period'];  
+			  
+			  
+		     if($update=='W')
+		       {
+			  $result = db_query("SELECT SQL_CACHE SUBDATE(CURDATE(),((WEEK(CURDATE(),1)%".$period.")*7)+ DAYOFWEEK(CURDATE())-1+IF(DAYOFWEEK(CURDATE())=1,7,0)) as dt ");
+			 if(!mysql_error())
+			  $object = mysql_fetch_object($result);
+			  $rank['date'] = $object->dt;
+		       }
+		     else
+		       {
+			  $result = db_query("SELECT SQL_CACHE LAST_DAY(SUBDATE(CURDATE(),INTERVAL 1 MONTH)) as dt");
+			  if(!mysql_error())
+			  $object = msql_fetch_object($result);
+			  $rank['date'] = $object->dt;
+		       }
+		  }
+	  }
+     }
+?>

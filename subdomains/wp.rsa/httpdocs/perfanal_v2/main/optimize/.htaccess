@@ -1,0 +1,5 @@
+AuthName "Web Admin only" 
+AuthType Basic 
+AuthUserFile /var/www/vhosts/swimdynamics.co.za/cgi-bin/htpass/.htpasswd 
+AuthGroupFile /dev/null 
+require valid-user

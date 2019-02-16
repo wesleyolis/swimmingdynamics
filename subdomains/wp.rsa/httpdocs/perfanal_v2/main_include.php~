@@ -1,0 +1,22 @@
+<?php
+	
+	function microtime_float()
+	{
+	    list($usec, $sec) = explode(" ", microtime());
+	    return ((float)$usec + (float)$sec);
+	}
+
+	$render_start = microtime_float();
+	//ob_start();
+	
+	//$js_script="<script type=\"text/javascript\">\nvar _gaq = _gaq || [];_gaq.push(['_setAccount', 'UA-8330106-3']);_gaq.push(['_setDomainName', '.co.za']);_gaq.push(['_trackPageview']);(function() {var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);})();\n</script>";
+
+	
+	require('main_config.php');
+	require('site_matcher.php');
+	require('main_functions.php');
+	require('main_durpal_functions.php');
+	require('cache_control.php');
+	require('render_page.php');
+	$arg=($_GET['q']!='')?explode($exp,$_GET['q']):'';
+?>

@@ -1,0 +1,16 @@
+[03-Nov-2018 09:13:24] PHP Warning:  mysqli_connect() [<a href='function.mysqli-connect'>function.mysqli-connect</a>]: (HY000/2005): Unknown MySQL server host 'localhost:3306' (-2) in /home/swimdy16/subdomains/wp.rsa/httpdocs/testdbConnect.php on line 3
+[03-Nov-2018 10:12:31] PHP Warning:  mysqli_connect() [<a href='function.mysqli-connect'>function.mysqli-connect</a>]: (HY000/2005): Unknown MySQL server host 'localhost:3306' (-2) in /home/swimdy16/subdomains/wp.rsa/httpdocs/testdbConnect.php on line 3
+[03-Nov-2018 11:05:16] PHP Warning:  mysqli_connect() [<a href='function.mysqli-connect'>function.mysqli-connect</a>]: (HY000/2005): Unknown MySQL server host 'localhost:3306' (-2) in /home/swimdy16/subdomains/wp.rsa/httpdocs/testdbConnect.php on line 3
+[03-Nov-2018 11:11:03] PHP Warning:  mysqli_connect() [<a href='function.mysqli-connect'>function.mysqli-connect</a>]: (HY000/2005): Unknown MySQL server host 'localhost:3306' (-2) in /home/swimdy16/subdomains/wp.rsa/httpdocs/testdbConnect.php on line 3
+[06-Nov-2018 11:07:56] PHP Warning:  mysqli_connect() [<a href='function.mysqli-connect'>function.mysqli-connect</a>]: (HY000/2005): Unknown MySQL server host 'localhost:3306' (-2) in /home/swimdy16/subdomains/wp.rsa/httpdocs/testdbConnect.php on line 3
+[08-Nov-2018 08:00:16] PHP Warning:  mysqli_connect() [<a href='function.mysqli-connect'>function.mysqli-connect</a>]: (HY000/2005): Unknown MySQL server host 'localhost:3306' (-2) in /home/swimdy16/subdomains/wp.rsa/httpdocs/testdbConnect.php on line 3
+[08-Nov-2018 11:18:36] PHP Warning:  mysqli_connect() [<a href='function.mysqli-connect'>function.mysqli-connect</a>]: (28000/1045): Access denied for user '
+swimdy16_wp_rsa_perfanal1'@'localhost' (using password: YES) in /home/swimdy16/subdomains/wp.rsa/httpdocs/db-connect-test.php on line 9
+[08-Nov-2018 11:19:16] PHP Warning:  mysqli_connect() [<a href='function.mysqli-connect'>function.mysqli-connect</a>]: (HY000/2005): Unknown MySQL server host 'srv35.hostserv.co.za:3306' (-2) in /home/swimdy16/subdomains/wp.rsa/httpdocs/db-connect-test.php on line 9
+[08-Nov-2018 11:21:59] PHP Warning:  mysqli_connect() [<a href='function.mysqli-connect'>function.mysqli-connect</a>]: (28000/1045): Access denied for user '
+swimdy16_wp_rsa_perfanal1'@'srv35.hostserv.co.za' (using password: YES) in /home/swimdy16/subdomains/wp.rsa/httpdocs/db-connect-test.php on line 9
+[08-Nov-2018 11:23:08] PHP Warning:  mysqli_connect() [<a href='function.mysqli-connect'>function.mysqli-connect</a>]: (28000/1045): Access denied for user '
+swimdy16_wp_rsa_perfanal1'@'srv35.hostserv.co.za' (using password: YES) in /home/swimdy16/subdomains/wp.rsa/httpdocs/db-connect-test.php on line 9
+[08-Nov-2018 11:23:11] PHP Warning:  mysqli_connect() [<a href='function.mysqli-connect'>function.mysqli-connect</a>]: (28000/1045): Access denied for user '
+swimdy16_wp_rsa_perfanal1'@'srv35.hostserv.co.za' (using password: YES) in /home/swimdy16/subdomains/wp.rsa/httpdocs/db-connect-test.php on line 9
+[08-Nov-2018 09:54:46 UTC] PHP Fatal error:  Call to undefined function mysql_connect() in /home/swimdy16/subdomains/wp.rsa/httpdocs/testdbConnect.php on line 4

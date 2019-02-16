@@ -1,0 +1,15 @@
+; $Id: addtofavorites.info,v 1.1.4.8 2007/05/07 21:19:10 thierrygd Exp $
+name = Add to Favorites
+description = The addtofavorites module allows ...
+package = Addtofavorites
+
+; Information added by drupal.org packaging script on 2007-05-06
+version = "5.x-1.x-dev"
+project = "addtofavorites"
+
+
+; Information added by drupal.org packaging script on 2007-05-20
+version = "5.x-1.x-dev"
+project = "addtofavorites"
+datestamp = "1179619394"
+

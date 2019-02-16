@@ -1,0 +1,11 @@
+; $Id: activeedit.info,v 1.1 2007/01/17 05:57:40 nedjo Exp $
+name =  Activeedit
+description = Provides AJAX-based in place editing.
+package = Javascript tools
+dependencies = jstools formfilter
+version = "$Name: DRUPAL-5--0-6 $"
+
+; Information added by drupal.org packaging script on 2007-03-19
+version = "5.x-0.6"
+project = "jstools"
+

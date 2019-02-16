@@ -1,0 +1,5 @@
+http://wp.rsa.swimdynamics.co.za/perfanal_v2/main/athlete/list_athletes.php?db=league&ss=2010
+http://wp.rsa.swimdynamics.co.za/perfanal_v2/main/athlete/list_athletes.php?db=league&ss=2009
+http://wp.rsa.swimdynamics.co.za/perfanal_v2/main/athlete/list_athletes.php?db=league&ss=2008
+http://wp.rsa.swimdynamics.co.za/perfanal_v2/main/athlete/list_athletes.php?db=league&ss=2007
+http://wp.rsa.swimdynamics.co.za/perfanal_v2/main/athlete/list_athletes.php?db=series&ss=2010

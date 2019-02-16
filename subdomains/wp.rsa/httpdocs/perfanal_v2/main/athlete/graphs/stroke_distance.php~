@@ -1,0 +1,35 @@
+<?php
+ $age_groups[] = Array(50,1,1,1,1,null);
+		    $age_groups[] = Array(100,1,1,1,1,1);
+		    $age_groups[] = Array(200,1,1,1,1,1);
+		    $age_groups[] = Array(400,1,null,null,null,1);
+		    $age_groups[] = Array(800,1);
+		    $age_groups[] = Array(1500,1);
+
+		    $rows=array();
+		    
+		    $headers[] = array('data' => t('Distance'), 'width' => '70px');
+		 
+		    $headers[] = array('data' => l2(Stroke(1),'ath='.$_GET['ath'].'&st=1&dis=All','fina.php'), 'width' => '60px');
+		    $headers[] = array('data' => l2(Stroke(2),'ath='.$_GET['ath'].'&st=2&dis=All','fina.php'), 'width' => '60px');
+		    $headers[] = array('data' => l2(Stroke(3),'ath='.$_GET['ath'].'&st=3&dis=All','fina.php'), 'width' => '60px');
+		    $headers[] = array('data' => l2(Stroke(4),'ath='.$_GET['ath'].'&st=4&dis=All','fina.php'), 'width' => '60px');
+		    $headers[] = array('data' => l2(Stroke(5),'ath='.$_GET['ath'].'&st=5&dis=All','fina.php'), 'width' => '60px');
+
+		    foreach($age_groups as $gp)
+		      {
+			 $rows[] = array((($gp[0]!=null)?l2($gp[0].'m','ath='.$_GET['ath'].'&st=All&dis='.$gp[0],'fina.php'):'-'),
+					 (($gp[1]==1)?theme_image('../../../images/tick.gif','*'):'-'),
+					 (($gp[2]==1)?theme_image('../../../images/tick.gif','*'):'-'),
+					 (($gp[3]==1)?theme_image('../../../images/tick.gif','*'):'-'),
+					 (($gp[4]==1)?theme_image('../../../images/tick.gif','*'):'-'),
+					 (($gp[5]==1)?theme_image('../../../images/tick.gif','*'):'-'));
+		      }
+
+		    $output.=l2('Overall Perfomance - Fina Points','ath='.$_GET['ath'].'&st=All&dis=All','fina.php').' - Regardless of Stroke or Distance';
+		    $output.='<br/><br/>';
+		    $output.='Comapare Performance within a cetain stroke or distance (Table of options Below).<br><br>By click freestyle(stroke) you will be comparing only the freestyle events,<br> by looking down the colom for freestyle(stroke) you shall see all the distance<br> that are mark with tick that are in that comparision.</li>';
+		    $output.='<br><br>Similarly you can select spesific distance in which compared performance<br>and all the diffrent strokes with ticks for that distance performance shall be compared.';
+		  
+		    $output.= theme_table($headers, $rows,null,null);
+?>

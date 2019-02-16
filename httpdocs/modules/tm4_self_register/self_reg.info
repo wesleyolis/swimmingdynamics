@@ -1,0 +1,4 @@
+name = "TM4 Self Registration"
+description = "Automated online registration with e commer of swimmers." 
+version = "0.1beta"
+package = "Swimming"

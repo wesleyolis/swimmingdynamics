@@ -1,0 +1,4 @@
+# 12 weeks
+<FilesMatch "\.(ico|flv|jpg|jpeg|png|gif|js|css|swf)$">
+Header set Cache-Control "max-age=7257600, public"
+</FilesMatch>                                                                                             

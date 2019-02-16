@@ -1,0 +1,118 @@
+<?php
+require('../../main_include.php');
+
+   $page_exe = true;
+   $fina_year = $running_config['fina_points_rank_year'];;
+      
+   $min_display = $config['perfanal_min_display'];
+   $lsc = $config['lsc'];
+   $cntry = $config['cntry'];
+   $url_pref = (($cntry=='')?'All':$cntry);
+   $confirm = $config['rankcon'];
+   
+   
+   
+   if($cntry!='')
+     $pref_head.=$cntry.' ';
+   if($lsc!='')
+   {
+   $pref_head.= (($pref_head !='')?' - ':'');
+     $pref_head.=$lsc.' ';
+   }
+   if($_GET['lsc']!=$cntry & $_GET['lsc']!=null & $_GET['lsc']!='All' & $_GET['lsc']!=$lsc)
+   {
+	   $pref_head.= (($pref_head !='')?' - ':'');
+     $pref_head.=$_GET['lsc'].' ';
+   }
+   
+   $update = $config['ranking_update'];
+   $period = $config['perfanal_ranking_period'];
+   $rank_fina = $config['rank_fina_multi_seasons'];
+   
+   $type = Array('indi_points'=>'Individual Points','team_points'=>'Team Points','time'=>'Time','fina'=>'Fina');
+
+   setseasons_breadcrumb(null);
+
+   //cehck rankigns are being updateed.
+   
+	   //check rankings are in the proces of being update, then redirect updating page.
+	   if(($running_config == null && $page_file != 'rankings_updating.php') || ($running_config['ranking_updating'] == true && $page_file != 'rankings_updating.php'))
+	   {
+		   header("Cache-Control: max-age=-1, no-store"); 
+		   drupal_goto('rankings_updating.php',null,true);
+	   }	
+   
+	//check for predicative ranking individual parameters and combine them
+	
+   		$ranking_on_date = $_GET['d'];
+	
+	//check for redirection
+	if($ranking_on_date == null)
+	{	//if their is no ranking date use the general ranking date, this keeps pages unic and prevent user being served a catch copy of a page
+		$ranking_on_date = $running_config['ranking_last_update'];
+		//check is archived then their is no predicative rankings
+	}
+	else
+	{	
+		//can be repalce by date_parse_formate in php5.3
+		
+		$B_date = explode('-',$ranking_on_date);
+		$ranking_on_date_d = mktime(0, 0, 0, $B_date[1], $B_date[2], $B_date[0]);
+		
+		$B_date = explode('-',$running_config['ranking_last_update']);
+		$ranking_last_update_d = mktime(0, 0, 0, $B_date[1], $B_date[2], $B_date[0]);
+
+		//check ranking is old date in url, or if its archive then can only be on date, as their is no predicative rankings.
+		if($ranking_on_date_d <	$ranking_last_update_d || ($running_config['ranking_type']=='archive' && $ranking_on_date_d != $ranking_last_update_d))
+		{
+			//if ther submited date rankings is older than current ranking, redicte the user to the lastest rankings date with the same url parameters
+			$_GET['d'] = $running_config['ranking_last_update'];
+			$param = '';
+			foreach($_GET as $key => $val)
+			{
+				$param.= (($param=='')?'':'&').$key.'='.$val;
+			}
+			if($page_file == 'ranking_pred.php')
+				drupal_goto('index.php',$param,false);
+			else
+				drupal_goto($page_url.$page_file,$param,false);
+		}
+		else
+		{
+			
+			if($ranking_on_date_d == $ranking_last_update_d)
+			{
+				$ranking_predicative = false;
+			}
+			else
+			{
+				$rankings_pedicative = true;
+			}
+		}
+	}
+	
+	
+	if($rankings_pedicative == true)
+	{
+	$pref_head.='Predicative ';
+	$meta_tags='<meta name="robots" content="noindex, nofollow">';
+	}
+	else
+	$meta_tags='<meta name="robots" content="index, follow">';
+	
+	$meettype = $config['rank_time_meet_filter'];
+	$meettype_fina = $config['rank_fina_meet_filter'];
+	
+	//render the options leading up to rankings
+	
+
+	$curr_param = '';
+	foreach($_GET as $key => $val)
+	{
+		if($key != 'ss' && $key != 'db')
+		$curr_param.= (($curr_param=='')?'':'&').$key.'='.$val;
+	}
+	
+
+   
+?>

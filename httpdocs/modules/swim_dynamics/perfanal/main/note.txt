@@ -1,0 +1,8 @@
+
+/*functions not yet protected by sql injection
+meet
+meet/indi_points
+fina/*
+rankings/*
+
+*/

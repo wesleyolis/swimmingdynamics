@@ -1,0 +1,46 @@
+<?php
+$breakers_days = $config['display_breakers'];
+$results = db_query('SELECT record from '.$db_name.'records as r Where DATEDIFF(CURDATE(),r.RecDate)<='.$breakers_days);
+if(!mysql_error())
+if(mysql_num_rows($results) != 0)
+{
+	
+}
+
+
+/*
+
+function block_prefanal_record_breakers()
+{
+	     $season = get_cur_seasons();
+		$breakers_days = variable_get('perfanal_display_breakers', '30');
+	     $output="<div id='record_breakers'><input type='hidden' id='record_url' value='".url('records/'.$season.'/break')."'></div>";
+	     drupal_add_js(path().'/js/ajax.js',null,'footer',true);
+	     drupal_add_js(path().'/js/records.js',null,'footer',true);
+	     return $output;	
+}
+
+function perfanal_record_break()
+{
+	$tm4db = variable_get('perfanal_database', 'perfanal');
+	 $season = get_cur_seasons();
+	  $rec_return = variable_get('perfanal_records_breakers_atonce',  8);
+	     $breakers_days = variable_get('perfanal_display_breakers', '30');
+	//    $results = db_query("SELECT SQL_CACHE n.*, r.*,((r.Lo_Age*100)+r.Hi_Age) as Age  from ".$tm4db."recname_".$season." as n inner join ".$tm4db."records_".$season." as r on (n.record = r.Record) Where r.I_R='I' and  DATEDIFF(CURDATE(),r.RecDate)<=".$breakers_days." ".(arg(3)?' and n.record='.arg(3):''). " Order by r.recdate desc limit ".((arg(3)*8)+1).','.$rec_return);
+	//echo "SELECT SQL_CACHE n.*, r.*,((r.Lo_Age*100)+r.Hi_Age) as Age  from ".$tm4db."recname_".$season." as n inner join ".$tm4db."records_".$season." as r on (n.record = r.Record) Where r.I_R='I' and  DATEDIFF(CURDATE(),r.RecDate)<=".$breakers_days." Order by r.recdate desc limit ".((arg(3)*8)+1).','.$rec_return;   
+	$results = db_query("SELECT SQL_CACHE n.*, r.*,((r.Lo_Age*100)+r.Hi_Age) as Age  from ".$tm4db."recname_".$season." as n inner join ".$tm4db."records_".$season." as r on (n.record = r.Record) Where r.I_R='I' and  DATEDIFF(CURDATE(),r.RecDate)<=".$breakers_days." Order by r.recdate desc limit ".((arg(3)*8)+1).','.$rec_return); 
+	    $rec='';
+	     while($object = db_fetch_object($results))
+	       {
+		       $rec.= "<div class='record'>";
+		       $rec.= "<div class='left'>".LO_HI($object->Lo_Age,$object->Hi_Age).'<br>'.get_time($object->RecTime).'</div>';
+		       $rec.= "<p class='right'>".$object->Distance.'m '.Stroke($object->Stroke).' '.$object->RecFile.' Record '.$object->Year.', <b>'.l($object->RecText,'records/'.$season.'/age/'.$object->Record.'/'.$object->Age).'</b>&nbsp;'.$object->RecLSC.($object->RecLSC!=null?'-':'').$object->RecTeam.' </p></div>';
+	       }
+	   
+	     print $rec;
+	       exit();	
+}
+
+*/
+
+?>

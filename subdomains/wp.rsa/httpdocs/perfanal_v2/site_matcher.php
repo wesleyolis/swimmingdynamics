@@ -1,0 +1,109 @@
+<?php
+/*this matches the url pattern to idetifie the site settings.
+Then it will set the local vari set equaly to the sites_settings
+It also then will establish a connection to the database*/
+$domain = $_SERVER["SERVER_NAME"];
+$url = $_SERVER["REQUEST_URI"];
+//echo $domain.'<br/>';
+//echo $url.'<br/>';
+
+$pos = strpos($url,'.php');
+$pos2 = strrpos($url,'/',$pos-strlen($url))+1;
+$page_file = substr($url,$pos2,$pos-$pos2).'.php';
+$page_url = substr($url,0,$pos2);
+
+
+$config=NULL;
+
+ foreach($sites as $domain_reg=>$data)
+ {
+	 
+	 if(preg_match('/'.$domain_reg.'/',$domain))
+	 {	
+		// echo 'Match Site';echo $domain_reg;
+		 foreach($data as $url_reg=>$conf)
+		 {
+			 
+			 if($_GET['db'] == $url_reg)
+		 	//if(preg_match('/'.$url_reg.'/',$url))
+			{
+				
+			//	echo 'Match url';echo $url_reg;
+				$config = $conf;
+				$config ['db_ident'] = $url_reg;
+				$seas=null;
+				foreach($conf['seas'] as $seas_reg=>$s)
+				{
+					
+					if($seas_reg>$seas)
+					 $seas=$seas_reg;
+					//echo $seas_reg;
+					 if($_GET['ss'] == $seas_reg)
+					 //if(preg_match('/'.$seas_reg.'/',$url))
+					{	
+					//	echo 'meatch seas';
+						
+						$config = array_merge($config,$s,$conf['settings'],$s['settings']);
+						$config['seas_curr'] = $seas_reg;
+						$running_config = $s['running_config'];
+						break;
+						break;
+						break;
+						
+					}
+				}
+			}
+		 }
+	 }
+
+ }
+ 
+
+ 
+$options_url = $app_dir.'/running_options/'.$domain_reg.'/'.$config ['db_ident'].'_'.$seas_reg.'_version_options.php';
+
+//read the active seasons
+if(file_exists ($options_url))
+{
+require($options_url);
+}
+
+// Options unic to a seasons
+$options_url = $app_dir.'/running_options/'.$domain_reg.'/'.$config ['db_ident'].'_'.$seas_reg.'_'.$config['version'].'_options.php';
+if(file_exists ($options_url))
+require($options_url);
+
+
+
+ 
+$db_name = $config['db_name'].'.'.$config['db_prefix'].'_'.$config['version'].'_';
+
+//echo print_r($config);
+
+if($app_domain==$domain_reg)
+$app_relative = $app_domain_dir;
+else
+$app_relative = 'http://'.$app_domain.$app_domain_dir;
+
+
+ if(is_null($config))
+ {
+	 //redirect error identifying site.
+	 echo'error no configuration found';
+	 exit();
+
+ }
+ else
+ if(!array_key_exists('seas_curr',$config))
+ {
+	 //redirect for latest seasons
+	// echo'redirect';
+	echo $app_relative.$page.'?db='.$url_reg.'&ss='.$seas;
+	 if($domain_reg!=null);
+	 header('Location: '.$pageurl.$page.'?db='.$config ['db_ident'].'&ss='.$seas) ;
+	 exit;
+ }
+
+ 
+ 
+?>

@@ -1,0 +1,9 @@
+<?php
+
+
+function phptemplate_breadcrumb($breadcrumb) {
+  if (!empty($breadcrumb)) {
+
+ return '<div class="breadcrumb" style="width:95%;"><div style="float:left;">'. implode(' › ', $breadcrumb) .'</div><div style="float:right;" align="left" valign="middle">'.l('Report Error or Incorrect Information','report&url='.$_SERVER['REQUEST_URI']).'</div></div>';
+}}
+?>

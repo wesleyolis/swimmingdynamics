@@ -1,0 +1,106 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>New Page 1</title>
+
+<script language="javascript">
+<!--
+
+var conn_stats = new Array(0.0,'ghj','ghj');
+var conn_avg = null;
+var conn_count = 0;
+
+var start=null;
+var size=null;
+var ct =0;
+
+req();
+//setTimeout("t2()",3000);
+function t2()
+{
+document.write(conn_stats);
+//alert('sdfsdf'+conn_stats);
+//alert(conn_avg);
+}
+function req()
+{
+var client = new XMLHttpRequest();
+
+client.open("GET", "http://wp.rsa.swimdynamics.co.za/no_cache.php", true);
+client.send();
+
+client.onreadystatechange = function() {
+ if(this.readyState>=2) {
+ 	if(size==null)
+	 size = this.getResponseHeader("Content-Length");
+	 if(size>0 && size!=null)
+	 {
+	 	start = new Date().getTime();
+	 }
+ }
+// alert('hhhh'+this.responseText.length);
+ //alert(this.readyState+':'+this.getResponseHeader("Content-Length"));
+  if(this.readyState>=4 ||this.responseText.length>=size) {
+  
+		curr = new Date().getTime();	
+		//alert('ccc'+curr);
+		//alert(start);
+		time = curr - start;
+		//alert('diff'+time);
+	 start = null;
+	// alert(size+':'+time);
+	   	
+	 if(size>0 && time !=0)
+	 {
+		 trans_rate = size/time;
+		// alert('tttttt'+size+':'+time);
+		 conn_avg = ((conn_avg*conn_count)+trans_rate)/(++conn_count);
+		 conn_stats.push(trans_rate);
+	 }else
+	 {
+	// conn_stats.push(0);
+	 }
+	 
+ }
+ if(this.readyState>=4)
+	  {
+	  	curr = new Date().getTime();	
+		//alert('ccc'+curr);
+		//alert(start);
+		time = curr - start;
+		//alert('diff'+time);
+	 start = null;
+	// alert(size+':'+time);
+	   	
+	 if(size>0 && time !=0)
+	 {
+		 trans_rate = size/time;
+		// alert('tttttt'+size+':'+time);
+		// conn_avg = ((conn_avg*conn_count)+trans_rate)/(++conn_count);
+		 conn_stats.push(trans_rate);
+	 }
+	  ct++;
+	 setTimeout("req()",100);
+	  }
+	  else
+	 {
+	// conn_stats.push(0);
+	 }
+	 
+	  if(ct>=20)
+	  {
+	  t2();
+	  }
+}
+}
+
+//-->
+</script>
+</head>
+
+<body>
+
+</body>
+
+</html>

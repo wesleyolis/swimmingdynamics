@@ -1,0 +1,93 @@
+<?php
+// $Id: adsense_click.module,v 1.1.2.7 2008/12/19 01:31:50 jcnventura Exp $
+
+/**
+ * @file
+ * Enables Drupal to track and log the clicks on AdSense ads.
+ *
+ * This is a sub-module of the AdSense package, with the Drupal hooks
+ * and other administrative functions.
+ */
+
+define('ADSENSE_CLICK_TRACKING_DEFAULT', TRUE);
+define('ADSENSE_CLICK_TRACKING_NAME_RESOLVE_DEFAULT', 0);
+
+require_once(drupal_get_path('module', 'adsense_click') .'/adsense_click.admin.inc');
+require_once(drupal_get_path('module', 'adsense_click') .'/adsense_click.logs.inc');
+
+/**
+ * Implementation of hook_menu().
+ */
+function adsense_click_menu($may_cache) {
+  $items = array();
+
+  if ($may_cache) {
+    $items[] = array(
+      'path'               => 'admin/settings/adsense/click',
+      'title'              => t('Clicks'),
+      'description'        => t('Track the clicks on Adsense ads.'),
+      'callback'           => 'drupal_get_form',
+      'callback arguments' => 'adsense_click_admin_settings',
+      'type'               => MENU_LOCAL_TASK,
+      'access'             => user_access('administer site configuration'),
+      'weight'             => 9,
+    );
+    $items[] = array(
+      'path'        => 'admin/logs/adsense',
+      'title'       => t('AdSense clicks'),
+      'description' => t('Track AdSense clicks.'),
+      'callback'    => 'adsense_click_log',
+      'type'        => MENU_NORMAL_ITEM,
+      'access'      => user_access('view clicks'),
+    );
+    $items[] = array(
+      'path'     => 'admin/logs/adsense/top_pages',
+      'title'    => t('Top pages'),
+      'callback' => 'adsense_click_top_pages',
+      'type'     => MENU_NORMAL_ITEM,
+      'access'   => user_access('view clicks'),
+    );
+    $items[] = array(
+      'path'     => 'admin/logs/adsense/by_day',
+      'title'    => t('By day'),
+      'callback' => 'adsense_click_by_day',
+      'type'     => MENU_NORMAL_ITEM,
+      'access'   => user_access('view clicks'),
+    );
+  }
+  else {
+    $items[] = array(
+      'path'     => 'adsense_click',
+      'callback' => 'adsense_click_register',
+      'access'   => TRUE,
+      'type'     => MENU_CALLBACK,
+    );
+  }
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function adsense_click_perm() {
+  return array('view clicks');
+}
+
+/**
+ * Implementation of hook_footer().
+ */
+function adsense_click_footer($main = 0) {
+  if (variable_get('adsense_click_tracking', ADSENSE_CLICK_TRACKING_DEFAULT)) {
+    $path = base_path() . drupal_get_path('module', 'adsense_click') .'/adsense_click.js';
+    $js = '<script type="text/javascript" src="'. $path .'"></script>';
+    return $js;
+  }
+}
+
+function adsense_click_register() {
+  if (variable_get('adsense_click_tracking', ADSENSE_CLICK_TRACKING_DEFAULT)) {
+    db_query("INSERT INTO {adsense_clicks} (ip, timestamp, path, title, referrer) values('%s', %d, '%s', '%s', '%s')",
+      $_SERVER['REMOTE_ADDR'], time(), $_GET['u'], $_GET['t'], $_GET['r']);
+  }
+}

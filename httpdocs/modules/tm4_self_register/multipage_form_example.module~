@@ -1,0 +1,473 @@
+<?php
+
+// $Id: multipage_form_example.module,v 1.7 2006/04/02 19:23:47 thehunmonkgroup Exp $
+
+/**
+ * Implementation of hook_help().
+ */
+function multipage_form_example_help($section) {
+  switch ($section) {
+    case 'admin/modules#description':
+      return t('An example module showing how to handle multipage forms in FAPI.');
+    case 'node/add#multipage_form_example':
+      return t('This will show you an example multipage form submission.');
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function multipage_form_example_menu($may_cache) {
+  $items = array();
+
+  if (!$may_cache) {
+
+    $items[] = array('title'    => t('multipage form example'),
+                     'path'     => 'node/add/multipage_form_example',
+                     'access'   => TRUE,
+    );
+  }
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_access().
+ */
+function multipage_form_example_access($op, $node) {
+  return TRUE;
+}
+
+/**
+ * Implementation of hook_node_info().
+ */
+function multipage_form_example_node_info() {
+  return array('multipage_form_example' => array('name' => t('multipage form example'), 'base' => 'multipage_form_example'));
+}
+
+/**
+ * Implementation of hook_form() for multipage_form_example. We don't set ANY
+ * #required attributes here - we leave that up to multipage_form_example_pre_render().
+ */
+function multipage_form_example_form(&$node) {
+  $form = array();
+
+  // 'checkboxes' elements are just ridiculously hard--i recommend just
+  //  using a bunch of individual checkbox elements instead.
+  //  I suspect that multiselects would also be pretty difficult...
+
+  // Here's a new form element, which enables you to store hidden values
+  // in an array.  Check out the element definition functions at the bottom
+  // if you want to use this in a module.  Keys show up in the
+  // $_POST/$form_values like:
+  // $_POST['edit']['test_hidden_array']['n'] = 'north'
+  // $form_values['test_hidden_array']['n'] = 'north'
+
+  $form['test_hidden_array'] = array(
+    '#type'          => 'hidden_array',
+    '#values'        => array('n' => 'north', 'e' => 'east', 'w' => 'west', 's' => 'south', ),
+  );
+
+
+
+  // Helper for our multipage - does field switching, sets options
+  // based on validated $form_values instead of $_POST, and so forth.
+  $form['#pre_render'] = array('multipage_form_example_pre_render');
+
+  // Title and body, page 1
+  $form['title'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Title'),
+    '#default_value' => isset($node->title) ? $node->title : NULL,
+    '#description'   => t("Enter a title for your favorites section."),
+    '#size'          => 60,
+    '#maxlength'     => 128,
+    '#required'      => TRUE,
+  );
+  $form['body'] = array(
+    '#type'          => 'textarea',
+    '#title'         => t('Description'),
+    '#default_value' => isset($node->body) ? $node->body : NULL,
+    '#description'   => t('Add any additional info about your favorites.'),
+    '#rows'          => 20,
+  );
+
+  // Person, page 2
+  $form['person'] = array(
+    '#type'          => 'fieldset',
+    '#title'         => t('Your favorite person'),
+  );
+  $form['person']['fav_person'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Name'),
+    '#default_value' => isset($node->fav_person) ? $node->fav_person : NULL,
+    '#description'   => t('Enter their real name, or their code name if they like to fly stealth.'),
+    '#required'      => TRUE,
+  );
+  $form['person']['fav_person_desc'] = array(
+    '#type'          => 'textarea',
+    '#title'         => t('Description'),
+    '#default_value' => isset($node->fav_person_desc) ? $node->fav_person_desc : NULL,
+    '#description'   => t('Juicy details go here...'),
+    '#required'      => TRUE,
+  );
+  $form['person']['fav_gummi'] = array(
+    '#type'          => 'checkbox',
+    '#default_value' => isset($node->fav_gummi) ? $node->fav_gummi : 0,
+    '#title'         => t('Do they like gummi bears?'),
+  );
+
+  // Color and number, page 3
+  $form['fav_color'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Favorite color'),
+    '#default_value' => isset($node->fav_color) ? $node->fav_color : 'red',
+    '#options'       => array('red' => t('Red'), 'green' => t('Green'), 'blue' => t('Blue'), 'yellow' => t('Yellow')),
+    '#required'      => TRUE,
+  );
+  $form['fav_number'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Favorite number'),
+    '#default_value' => isset($node->fav_number) ? $node->fav_number : NULL,
+    '#required'      => TRUE,
+  );
+
+  // Movie and tv show, page 4
+  $form['fav_movie'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Favorite movie'),
+    '#default_value' => isset($node->fav_movie) ? $node->fav_movie : NULL,
+    '#required'      => TRUE,
+  );
+  $form['fav_tv'] = array(
+    '#type'          => 'radios',
+    '#title'         => t('How often do you watch your favorite tv show?'),
+    '#default_value' => isset($node->fav_tv) ? $node->fav_tv : 'daily',
+    '#options'       => array('daily' => t('Daily'), 'weekly' => t('Weekly'), 'monthly' => t('Monthly'),),
+    '#required'      => TRUE,
+  );
+
+  // Add a back button
+  $form['back'] = array(
+    '#type'          => 'button',
+    '#value'         => t('Back'),
+    '#weight'        => 35,
+  );
+
+  return $form;
+}
+
+function theme_multipage_form_example_node_form($form) {
+  $content = '';
+
+  if (in_array($form['page']['#value'], array(3,4))) {
+    $content .= '<p>'. t('Your favorite person is %person, and they %like gummi bears.', array('%person' => check_plain($form['person']['fav_person']['#value']), '%like' => ($form['person']['fav_gummi']['#value'] ? t('like') : t('don\'t like')))) .'</p>';
+  }
+
+  if (in_array($form['page']['#value'], array(4))) {
+    $content .= '<p>'. t('Your favorite color is %color, and your favorite number is %number.', array('%color' => check_plain($form['fav_color']['#value']), '%number' => check_plain($form['fav_number']['#value'])));
+  }
+
+  foreach (element_children($form) as $key) {
+    $content .= form_render($form[$key]);
+  }
+  return $content;
+}
+
+/**
+ * Implementation of hook_form_alter(). Here, we set up the 'page' field,
+ * which keeps track of what stage the form is in.
+ */
+function multipage_form_example_form_alter($form_id, &$form) {
+  // Make sure it's our multipage form.
+  if ($form_id == 'multipage_form_example_node_form') {
+
+    // Determine which page of the multipage form we're on. We don't do
+    // any incrementing here - that's something that our #pre_render'er
+    // will do when this page of the form has successfully validated.
+    $form['page'] = array(
+      '#type' => 'hidden',
+      '#value' => isset($_POST['edit']['page']) ? $_POST['edit']['page'] : 1,
+    );
+
+    // If back button is pressed, back up the form stage, Also, if preview
+    // is hit we need to decrement the counter here to keep us on the same page.
+    if ($_POST['op'] == t('Back')) {
+      $form['page']['#value']--;
+    }
+
+    // This modifies the form for validation purposes. once validation is
+    // completed, it'll be called one more time (through Drupal's Form API)
+    // at which point it'll advance the form to the next page.
+    multipage_form_example_pre_render($form_id, $form, FALSE);
+
+    // Here we're augmenting the regular node form validation/submission with
+    // some of our own.  Note that these are inside the conditional check for
+    // this particular form.
+    $form['#validate'] = array_merge($form['#validate'], array('multipage_form_example_custom_validate' => array()));
+    $form['#submit'] = array_merge($form['#submit'], array('multipage_form_example_custom_submit' => array()));
+  }
+
+  return $form;
+}
+
+/**
+ * Validate our form.
+ */
+function multipage_form_example_custom_validate() {
+  global $form_values;
+  // validate our number, but don't bother if the back button was hit
+  if (($form_values['page'] ==  3 ) && !is_numeric($form_values['fav_number']) && ($_POST['op'] != t('Back'))) {
+    form_set_error('fav_number', t('Favorite number is a <em>number</em>, dummy!'));
+  }
+}
+
+/**
+ * The #pre_render of a form allows us to make changes AFTER validation (unlike
+ * hook_form_alter()), but BEFORE the form has actually been displayed. We use
+ * it to control which form elements are shown, which are hidden, and which values
+ * to set based on validate elements, not $_POST. This is a necessity for our
+ * complicated multipage example form.
+ */
+function multipage_form_example_pre_render($form_id, &$form, $next_page = TRUE) {
+  global $form_values;
+
+  // Make sure it's our multipage form.
+  if ($form_id == 'multipage_form_example_node_form') {
+    // Are we ready for the next page in our form?
+    if ($next_page && isset($_POST['edit']['page']) && ($_POST['op'] != t('Back')) && ($_POST['op'] != t('Preview'))) {
+      $form['page']['#value'] = $form['page']['#value'] + 1;
+    }
+
+    // Validation errors? Show previous page for correcting.
+    if (form_get_errors()) {
+      $form['page']['#value']--;
+    }
+
+    // Modify the #required/#type values depending on our current page.
+    // The arrays tell us the pages the changes should take place in.
+
+    // Title/body, stage 1
+    multipage_form_set_element_visibility($form['title'],                     in_array($form['page']['#value'], array(1)));
+    multipage_form_set_element_visibility($form['body'],                      in_array($form['page']['#value'], array(1)));
+
+    // Person, stage 2
+    multipage_form_set_element_visibility($form['person'],                    in_array($form['page']['#value'], array(2)));
+    multipage_form_set_element_visibility($form['person']['fav_person'],      in_array($form['page']['#value'], array(2)));
+    multipage_form_set_element_visibility($form['person']['fav_person_desc'], in_array($form['page']['#value'], array(2)));
+    multipage_form_set_element_visibility($form['person']['fav_gummi'],       in_array($form['page']['#value'], array(2)), $next_page);
+
+    // Color and number, page 3
+    multipage_form_set_element_visibility($form['fav_color'],                 in_array($form['page']['#value'], array(3)));
+    multipage_form_set_element_visibility($form['fav_number'],                in_array($form['page']['#value'], array(3)));
+
+    // Movie and tv show, page 4
+    multipage_form_set_element_visibility($form['fav_movie'],                 in_array($form['page']['#value'], array(4)));
+    multipage_form_set_element_visibility($form['fav_tv'],                    in_array($form['page']['#value'], array(4)), $next_page);
+
+    // Buttons
+    multipage_form_set_element_visibility($form['back'],                      in_array($form['page']['#value'], array(2, 3, 4)), $next_page);
+    multipage_form_set_element_visibility($form['preview'],                   in_array($form['page']['#value'], array(4)), $next_page);
+    multipage_form_set_element_visibility($form['submit'],                    in_array($form['page']['#value'], array(4)), $next_page);
+
+    // The button text actually helps determine if a form has actually been
+    // submitted because the name is also the value of a clicked button. By
+    // changing it for building, but not rendering, the form is not fully
+    // sumbitted until we name it 'Submit', the usual value.
+    if ($next_page) {
+      $submit_text = array(NULL, t('Next (person)'), t('Next (color/number)'), t('Next (tv/movie)'), t('Submit'));
+      $form['submit']['#value'] = $submit_text[$form['page']['#value']];
+    }
+  }
+}
+
+// Handles form submission.  We're just throwing our data into the variable
+// table to keep things simple
+function multipage_form_example_custom_submit() {
+  global $form_values;
+  foreach ($form_values as $key => $value) {
+    if (in_array($key, array('fav_person', 'fav_person_desc', 'fav_gummi', 'fav_color', 'fav_number', 'fav_movie', 'fav_tv',))) {
+      $array[$key] = $value;
+    }
+  }
+
+    // A little hack so we can save new node info properly to the variable table
+  if (isset($form_values['nid'])) {
+    $nid = $form_values['nid'];
+  }
+  else {
+    $nid = db_result(db_query("SELECT id FROM {sequences} WHERE name = 'node_nid'"));
+  }
+
+  variable_set('multipage_form_example_'. $nid, $array);
+}
+
+/**
+ * Implementation of hook_load().
+ *
+ * Now that we've defined how to manage the node data in the database, We
+ * need to tell Drupal how to get the node back out. This hook is called
+ * every time a node is loaded, and allows us to do some loading of our own.
+ */
+function multipage_form_example_load($node) {
+  $additions = variable_get('multipage_form_example_'. $node->nid, NULL);
+  $additions = (object) $additions;
+  return $additions;
+}
+
+/**
+ * Implementation of hook_delete().
+ *
+ * Clean up our data in variable table.
+ */
+function multipage_form_example_delete($node) {
+  // Notice that we're matching all revision, by using the node's nid.
+  variable_del('multipage_form_example_'. $node->nid);
+}
+
+/**
+ * Implementation of hook_view().
+ *
+ * This is a typical implementation that simply runs the node text through
+ * the output filters.
+ */
+function multipage_form_example_view(&$node, $teaser = FALSE, $page = FALSE) {
+  $node = node_prepare($node, $teaser);
+  $favorites = theme('multipage_form_example', $node);
+  $node->body .= $favorites;
+  $node->teaser .= $favorites;
+}
+
+/**
+ * A custom theme function.
+ *
+ * By using this function to format our node-specific information, themes
+ * can override this presentation if they wish. We also wrap the default
+ * presentation in a CSS class that is prefixed by the module name. This
+ * way, style sheets can modify the output without requiring theme code.
+ */
+function theme_multipage_form_example($node) {
+  $person_display = t('Your favorite person is %person, and they %like gummi bears. <br \>', array('%person' => check_plain($node->fav_person), '%like' => ($node->fav_gummi ? t('like') : t('don\'t like'))));
+  $color_number_display = t('Your favorite color is %color, and your favorite number is %number. <br \>', array('%color' => check_plain($node->fav_color), '%number' => check_plain($node->fav_number)));
+  $tv_movie_display = t('Your favorite movie is %movie, and you watch your favorite tv show %watch.', array('%movie' => check_plain($node->fav_movie), '%watch' => check_plain($node->fav_tv)));
+
+  $output = '<div class="multipage_form_example">';
+  $output .= $person_display . $color_number_display . $tv_movie_display;
+  $output .= '</div>';
+
+  return $output;
+}
+
+/**
+ * Set an element's visibility. Elements are gnerally changed to hidden
+ * elements. Visibility may be set and reset any number of times.
+ *
+ * @param $element
+ *   The form element array to modify.
+ * @param $visible
+ *   The desired visibity of the form element.
+ * @param $next_page
+ *   Boolean value, TRUE if the next page is about to be rendered, FALSE otherwise.
+ */
+function multipage_form_set_element_visibility(&$element, $visible, $next_page = TRUE) {
+  multipage_form_restore_attributes($element);
+  if (!$visible) {
+    switch ($element['#type']) {
+      case 'textfield':
+      case 'textarea':
+      case 'select':
+        multipage_form_set_attribute($element, '#type', 'hidden');
+        multipage_form_set_attribute($element, '#required', FALSE);
+        break;
+
+      case 'radios':
+        // Radios elements cannot be hidden unless they have been processed.
+        if ($next_page) {
+          multipage_form_set_attribute($element, '#type', 'hidden');
+          multipage_form_set_attribute($element, '#required', FALSE);
+        }
+        break;
+
+      case 'radio':
+      case 'checkbox':
+        // We can't change these to hidden until right before the next page is rendered, otherwise
+        // the value is lost sometimes.
+        if ($next_page) {
+          multipage_form_set_attribute($element, '#type', 'hidden');
+        }
+        break;
+
+      case 'fieldset':
+        multipage_form_set_attribute($element, '#type', NULL);
+        break;
+
+      case 'button':
+        if ($next_page) {
+          multipage_form_set_attribute($element, '#type', 'value');
+        }
+        break;
+
+      case 'submit':
+        if ($next_page) {
+          multipage_form_set_attribute($element, '#type', 'button');
+        }
+        break;
+    }
+  }
+
+  foreach (element_children($element) as $key) {
+    multipage_form_set_element_visibility($element[$key], $visible, $next_page);
+  }
+}
+
+/**
+ * Set an attribute on an element array with storing the previous value which
+ * may be reverted to using multipage_form_restore_attributes().
+ *
+ * @param $element
+ *   The form element array to modify.
+ * @param $key
+ *   A key of the form element array.
+ * @param $new_value
+ *   The new value for the attribute.
+ */
+function multipage_form_set_attribute(&$element, $key, $new_value) {
+  $element['#multipage_form_original_'. $key] = $element[$key];
+  $element[$key] = $new_value;
+}
+
+/**
+ * Restore any form attributes which have been set using
+ * multipage_form_set_attribute().
+ *
+ * @param $element
+ *   The form element array to restore.
+ */
+function multipage_form_restore_attributes(&$element) {
+  foreach (array_filter(array_keys($element), create_function('$key', 'return (strpos($key, "#multipage_form_original_") === 0);')) as $key) {
+    $element[str_replace('#multipage_form_original_', '', $key)] = $element[$key];
+  }
+}
+
+/**
+ * Playing around here with a new form element to enable storing hidden values in an array fashion.
+ * Seems to work fine.  Check out $form['test_hidden_array'] above for how to structure the form
+ * element
+ */
+function multipage_form_example_elements() {
+   $type['hidden_array'] = array('#input' => TRUE, '#process' => array('expand_hidden_array' => array()), '#tree' => TRUE);
+   return $type;
+}
+
+function expand_hidden_array($element) {
+  $values = is_array($element['#values']) ? $element['#values'] : array();
+  $element['#tree'] = TRUE;
+  foreach ($values as $key => $value) {
+    $element[$key] = array('#type' => 'hidden', '#processed' => TRUE, '#value' => $value);
+  }
+  return $element;
+}
+
+function theme_hidden_array($element) {
+  return $element['#children'];
+}

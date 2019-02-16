@@ -1,0 +1,64 @@
+*
+		case 'cheack age exist':
+		    {
+		       $output.= athlete_heading($tm4db,$season,arg(4));
+		       $query = "Select SQL_CACHE *,extract(YEAR FROM from_days(datediff(CURDATE(), Birth))) as age from ".$tm4db.".athlete_".$season." where Athlete= %d";
+		       $result= db_query($query,arg(4));
+		       $object = db_fetch_object($result);
+		       $age=$object->age-5;
+		      
+		       $output.='Please select an Age group from the sta';
+
+		       $results = db_query("Select StdFile,Descript From ".$tm4db.".stdname_".$season." Where StdFile='%s'",strtolower(arg(5)));
+		       if(db_num_rows($results)>0)
+			 {
+			    $object = db_fetch_object($results);
+			    $headers[] = array('data' => t('Age Group'), 'width' => '120px');
+
+			    $results = db_query("Select distinct ((Lo_Age*100)+Hi_Age) as Age From ".$tm4db.".".strtolower($object->StdFile)."_".$season." where Lo_Age <=".$age." ORDER by Lo_Age,Hi_Age");
+			    if(db_num_rows($results)==1)
+			      {
+				 $object = db_fetch_object($results);
+				 drupal_goto('athlete/'.arg(1).'/standards/age/'.arg(4).'/'.arg(5).'/'.$object->Age.'/L');
+			      }
+			    while($object = db_fetch_object($results))
+			      $rows[] = array(l(Age($object->Age),'athlete/'.arg(1).'/standards/age/'.arg(4).'/'.arg(4).'/'.$object->Age.'/L'));
+			 }
+		       else
+			 {
+			    drupal_set_message('Sorry this standard seem to be missing');
+			    drupal_goto('athlete/'.arg(1).'/standards/'.arg(4));
+			 }
+		       $output.=theme_table($headers, $rows,array('id'=>'hyper','class'=>'hyper'),null);
+
+		       return $output;
+		    }
+		  break;*/
+		  /*
+		case 'perf':
+		    {
+			    $output.= athlete_heading($tm4db,$season,arg(4));
+		       
+			       $results = db_query("Select * From ".$tm4db.".stdname_".$season." Where StdFile='%s'",strtolower(arg(5)));
+			     $object = db_fetch_array($results);
+			     
+			     drupal_set_title($object['StdFile'].(($object['Descript']==NULL)?'':' - '.$object['Descript'])." Standards &nbsp;&nbsp;");
+			    $course = 0;
+			    
+			     $count=0;
+			     $query='';
+			     for($i=1;$i<13;$i++)
+			       if($object['D'.$i]!=null & trim($object['D'.$i])!= '')
+				 {
+					 $level[$i] = $object['D'.$i];
+					$query.= (", If(S".($i+$course)."is null,0,S".($i+$course).") As S".($i+$course));
+				    $count++;
+				 }else break;
+			    
+
+				 
+			    
+		       return $output.'Under Development';
+
+		    }
+		  break;*/

@@ -1,0 +1,13 @@
+<?php	
+require('../../main_include.php');
+drupal_set_title('Seasonal database information avalible');
+$output.='Select one of the avalible seasons below to acess older information.';
+
+ foreach($config['seas'] as $season=>$val)
+ $output.=l($seasons,null,'/'.$page.'?db='.$config['db_ident'].'&ss='.$season).'<br>';
+ 
+render_page();
+
+?>
+	
+	

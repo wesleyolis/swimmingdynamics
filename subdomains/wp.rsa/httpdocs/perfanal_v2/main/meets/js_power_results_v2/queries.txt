@@ -1,0 +1,92 @@
+Set @pos=-1;
+select @pos:=@pos+1 as pos,t.team, t.TName, t.TCode,t.LSC from wp_rsa_perfanal_2009_00_result as r left join wp_rsa_perfanal_2009_00_team as t on (r.team = t.team)
+where r.meet = 36  group by r.team order by t.TName;
+
+select e.Session,e.MtEvent,e.MtEvX,e.Sex,e.Lo_Hi,e.distance,e.stroke,e.I_R from wp_rsa_perfanal_2009_00_mtevent as e where meet=36 order by e.MtEvent,e.MtEvX
+
+
+Set @pos=-1;
+select t.pos as team,a.Last,a.First,a.Sex,min(r.age) as age from wp_rsa_perfanal_2009_00_result as r inner join wp_rsa_perfanal_2009_00_athlete as a on(r.athlete=a.athlete)
+inner join 
+(
+
+select @pos:=@pos+1 as pos,t.team from wp_rsa_perfanal_2009_00_result as r left join wp_rsa_perfanal_2009_00_team as t on (r.team = t.team)
+where r.meet = 36  group by r.team order by t.TName
+) as t on r.team=t.team
+where r.meet=36 group by a.athlete order by a.athlete
+
+
+
+Set @pos=-1;
+select @pos:=@pos+1 as ath_pos,a.athlete from wp_rsa_perfanal_2009_00_result as r inner join wp_rsa_perfanal_2009_00_athlete as a on(r.athlete=a.athlete)
+inner join 
+(
+
+select t.team from wp_rsa_perfanal_2009_00_result as r left join wp_rsa_perfanal_2009_00_team as t on (r.team = t.team)
+where r.meet = 36  group by r.team order by t.TName
+) as t on r.team=t.team
+where r.meet=36 group by a.athlete
+
+
+
+
+
+
+
+
+
+SELECT a.ath_pos, r.score, r.place, r.athlete from wp_rsa_perfanal_2009_00_result as r inner join wp_rsa_perfanal_2009_00_mtevent as e on(r.mtevent = e.mtevent)
+inner join 
+(
+select @pos:=@pos+1 as ath_pos,a.athlete from wp_rsa_perfanal_2009_00_result as r inner join wp_rsa_perfanal_2009_00_athlete as a on(r.athlete=a.athlete)
+inner join 
+(
+
+select t.team from wp_rsa_perfanal_2009_00_result as r left join wp_rsa_perfanal_2009_00_team as t on (r.team = t.team)
+where r.meet = 36  group by r.team order by t.TName
+) as t on r.team=t.team
+where r.meet=36 group by a.athlete
+
+) as a on (a.athlete=r.athlete)
+
+where e.meet = 36 and r.I_R='I' order by e.MtEv,e.MtEvX
+
+
+
+
+SELECT @pos:= @pos+1 as ath_pos, r.score, r.place, r.athlete from wp_rsa_perfanal_2009_00_result as r inner join wp_rsa_perfanal_2009_00_mtevent as e on(r.mtevent = e.mtevent)
+inner join wp_rsa_perfanal_2009_00_athlete as a on(r.athlete=a.athlete)
+inner join wp_rsa_perfanal_2009_00_team as t on (r.team = t.team)
+where e.meet = 36 order by e.MtEv,e.MtEvX
+
+
+SELECT COUNT(*) as rcount,r.F_P,r.Mtevent from wp_rsa_perfanal_2009_00_result as r inner join wp_rsa_perfanal_2009_00_mtevent as e on(r.mtevent = e.mtevent)
+inner join 
+(
+select a.athlete from wp_rsa_perfanal_2009_00_result as r inner join wp_rsa_perfanal_2009_00_athlete as a on(r.athlete=a.athlete)
+inner join 
+(
+
+select t.team from wp_rsa_perfanal_2009_00_result as r left join wp_rsa_perfanal_2009_00_team as t on (r.team = t.team)
+where r.meet = 36  group by r.team order by t.TName
+) as t on r.team=t.team
+where r.meet=36 group by a.athlete
+
+) as a on (a.athlete=r.athlete)
+
+where e.meet = 36 group by r.Mtevent,r.F_P order by e.Session,e.MtEv,e.MtEvX
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,29 @@
+<?php
+   $output.= athlete_heading($tm4db,$season,arg(4));
+		       
+		         $results = db_query("Select SQL_CACHE * From ".$tm4db."stdname_".$season." Where StdFile='%s'",strtolower(arg(5)));
+			     $object = db_fetch_array($results);
+			     drupal_set_title($object['StdFile'].(($object['Descript']==NULL)?'':' - '.$object['Descript'])." Standards &nbsp;&nbsp;");
+			 //    setseasons_breadcrumb(array(l('Time Standards','standards/'.arg(1)),l('Age Groups','standards/'.arg(1).'/ages/'.arg(3))));
+			   
+			     $headers[] = array('data' => t('Q/Time'), 'width' => '100px');
+			      $headers[] = array('data' => t('Description'), 'width' => '200px');
+		
+			     $count=0;
+			     for($i=1;$i<13;$i++)
+			       if($object['D'.$i]!=null & trim($object['D'.$i])!= '')
+				 {
+					 $link = 'athlete/'.arg(1).'/standards/events/'.arg(4).'/'.arg(5).'/'.arg(6).'/'.($i-1).'/'.$object['D'.$i]; 
+				    $rows[] = array(l($object['D'.$i],$link),$object['D'.$i.'Des']);
+				    $count++;
+				 }else break;
+				 if($i==2)
+				 {
+					  drupal_goto($link);
+				 }
+		       
+		      
+		       $output.='<br/>Please select the standard time that you would like to apply.<br/><br/>';
+		       $output.=theme_table($headers, $rows,array('id'=>'hyper','class'=>'hyper'),null);
+		       
+?>

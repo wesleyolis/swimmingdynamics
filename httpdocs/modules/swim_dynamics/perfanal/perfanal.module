@@ -1,0 +1,68 @@
+<?php
+//expire tags fro content
+
+
+function perfanal_perm()
+{
+   return array('access performance analysis', 'admin performance analysis','aditional performance analysis');
+}
+function perfanal_menu($may_cache)
+{
+	
+   $items = array();
+   if ($may_cache)
+     {
+	     require('main/menu/basic_menu_cache.php');
+     }
+     else
+     {
+	require('main/menu/basic_menu_dynamic.php');     
+     }
+	
+	return $items;
+}
+
+/* module settings
+******************************************************************************************/
+
+
+
+function perfanal_records()
+{
+	drupal_goto('http://wp.rsa.swimdynamics.co.za/perfanal_v2/main/records/index.php?db=league&ss=2010');
+}
+function perfanal_standards()
+{
+	drupal_goto('http://wp.rsa.swimdynamics.co.za/perfanal_v2/main/standards/index.php?db=league&ss=2010');
+}
+
+function perfanal_fina()
+{
+	drupal_goto('http://wp.rsa.swimdynamics.co.za/perfanal_v2/main/fina/index.php?db=league&ss=2010');
+}
+
+function perfanal_ranking()
+{
+  drupal_goto('http://wp.rsa.swimdynamics.co.za/perfanal_v2/main/rankings/index.php?db=league&ss=2010');
+}
+
+
+function perfanal_meets()
+{
+	drupal_goto('http://wp.rsa.swimdynamics.co.za/perfanal_v2/main/meets/index.php?db=league&ss=2010');
+}
+
+function perfanal_athlete()
+{
+   drupal_goto('http://wp.rsa.swimdynamics.co.za/perfanal_v2/main/athlete/index.php?db=league&ss=2010');
+}
+
+
+
+
+
+
+
+
+
+?>

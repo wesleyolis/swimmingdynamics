@@ -1,0 +1,121 @@
+<?php
+require('../../../main_include.php'); 
+$output="";
+?>
+<html>
+<head>
+<title>WP Strand Sprint Gala 2004 2004-06-30 Results, Strand Aquatic's Swimming Club</title>
+<link rel="stylesheet" type="text/css" href="styles.css">
+<script src="filters.js" language="javascript" type="text/javascript"></script>
+<script language="javascript" type="text/javascript"><!--
+window.status="Downloading.... List of Clubs";
+document.write("<frameset cols='1,*' framespacing='0' frameborder='0' scrolling='no' noresize><frame name='l' target='_top' src='' scrolling='no' noresize><frameset rows='150,*' framespacing='0' frameborder='0' noresize><frame name='h'  scrolling='no'><frame name='m'></frameset></frameset>");
+
+type = new Array("Finals","Prelims","Semi-Final");
+
+clubs = new Array(<?php
+$query = "select t.TName, t.TCode,t.LSC from ".$db_name."result as r inner join ".$db_name."team as t on (r.team = t.team) where r.meet = ".inj_int($_GET['m'])."  group by r.team order by t.TName;";
+
+
+$result = db_query($query);
+	if(mysql_error())
+		exit();
+	else
+	{
+		while($object = mysql_fetch_object($result))
+		{
+		echo '"'.$object->TName.'","'.($object->TCode.'-'.$object->LSC).'",';
+		}
+	}
+?>"","");
+
+events = new Array(<?php
+$query = "select e.Session,e.MtEv,e.MtEvX,e.Sex,e.Lo_Hi,e.Distance,e.Stroke,e.I_R from ".$db_name."mtevent as e where meet=".inj_int($_GET['m'])." order by e.MtEv,e.MtEvX";
+
+$result = db_query($query);
+	if(mysql_error())
+		exit();
+	else
+	{
+		while($object = mysql_fetch_object($result))
+		{
+		echo ''.$object->Session.',"'.$object->MtEv.''.$object->MtEvX.'","'.$object->Sex.'",'.$object->Lo_Hi.','.$object->Distance.','.$object->Stroke.',"'.$object->I_R.'",';
+		}
+	}
+?>"","");
+
+loc = new Array(<?php
+
+$f_P = null;
+$Ev = null;
+$pos = 0;
+
+$F_P_S = array('F'=>0,'P'=>1,'S'=>2);
+	$query = "SELECT COUNT(*) as rcount,r.F_P,r.MtEvent from ".$db_name."result as r inner join ".$db_name."mtevent as e on(r.mtevent = e.mtevent) inner join  ( select SQL_CACHE a.athlete from ".$db_name."result as r inner join ".$db_name."athlete as a on (r.athlete=a.athlete) inner join ( select SQL_CACHE t.team from ".$db_name."result as r left join ".$db_name."team as t on (r.team = t.team) where r.meet = ".inj_int($_GET['m'])."  group by r.team order by t.TName ) as t on r.team=t.team where r.meet=".inj_int($_GET['m'])." group by a.athlete ) as a on (a.athlete=r.athlete) where r.I_R='I' and e.meet = ".inj_int($_GET['m'])." group by r.Mtevent,r.F_P order by e.Session,e.MtEv,e.MtEvX";
+	
+	$result = db_query($query);
+	
+	if(mysql_error())
+		exit();
+	else
+	{
+		while($object = mysql_fetch_object($result))
+		{
+			echo ''.$pos.','.$F_P_S[$object->F_P].','.$object->rcount.',';
+		
+			if($f_p != $object->F_P && $Ev != $object->MtEvent)
+			{
+				$f_p = $object->F_P;
+				$Ev = $object->MtEvent;
+				$pos++;
+			}
+		
+		}
+	}
+?>"","");
+window.status = "Proccessing... setting up Filters";
+fil ();
+window.status = "Dowmloading List of athletes";
+ath = new Array("-","-","-","-","-",<?php
+$query = "select SQL_CACHE t.pos as team,a.Last,a.First,a.Sex,min(r.age) as age from ".$db_name."result as r inner join ".$db_name."athlete as a on(r.athlete=a.athlete) inner join ( select @pos:=@pos+2 as pos,t.team from ".$db_name."result as r left join ".$db_name."team as t on (r.team = t.team) where r.meet=".inj_int($_GET['m'])."  group by r.team order by t.TName ) as t on r.team=t.team where r.meet=".inj_int($_GET['m'])." group by a.athlete order by a.athlete";
+db_query("Set @pos=-2;");
+$result = db_query($query);
+	if(mysql_error())
+		exit();
+	else
+	{
+		while($object = mysql_fetch_object($result))
+		{
+		echo '"'.$object->Last.'","'.$object->First.'",'.$object->team.',"'.$object->Sex.'",'.$object->age.',';
+		}
+	}
+?>"","");
+window.status = "Dowmloading Results";
+relay = new Array("","");
+
+res = new Array(<?php
+
+$query = ("SELECT sql_cache a.ath_pos, r.score,r.NT, r.place from ".$db_name."result as r inner join ".$db_name."mtevent as e on(r.mtevent = e.mtevent) inner join (select sql_cache @pos:=@pos+5 as ath_pos,a.athlete from ".$db_name."result as r inner join ".$db_name."athlete as a on(r.athlete=a.athlete) inner join ( select t.team from ".$db_name."result as r left join ".$db_name."team as t on (r.team = t.team) where r.meet = ".inj_int($_GET['m'])."  group by r.team order by t.TName ) as t on r.team=t.team where r.meet=".inj_int($_GET['m'])." group by a.athlete ) as a on (a.athlete=r.athlete) where e.meet = ".inj_int($_GET['m'])." and r.I_R='I' order by e.Session,e.MtEv,e.MtEvX,r.nt, r.score");
+
+db_query("Set @pos=0;");
+$result = db_query($query);
+
+	if(mysql_error())
+		exit();
+	else
+	{
+		while($object = mysql_fetch_object($result))
+		{            
+			echo (($object->NT==0)?$object->place:'"'.NT($object->NT).'"').','.$object->ath_pos.',"'.get_time($object->score).'",';
+			echo $object->place.','.$object->ath_pos.',"'.get_time($object->score).'",';
+		}
+	}
+?>"","");
+
+setTimeout("init();",1000);
+//-->
+</script></head><body>Strand aquatic's makes heavy use of JavaScript!<br>You don't appear to have a java compatible browser!<br>Please visit one of the following sites depending<br>on your browser to update it.<br><a href="http://microsoft.com/windows/ie/">Internet Explorer 6</a> or <a href="http://home.netscape.com/download/">Netscape 6</a></body></html>
+
+<?php
+echo $q;
+?>
